@@ -8,6 +8,13 @@ RiceForge lets you design Waybar and Wofi themes visually, preview changes live,
 
 ---
 
+## Screenshots
+
+![screenshot](/riceforge/ss/1.png)
+![screenshot](/riceforge/ss/2.png)
+![screenshot](/riceforge/ss/3.png)
+
+
 ## Features
 
 ### Waybar
@@ -204,14 +211,4 @@ Keep the core lightweight and offline-first.
 If a feature can work without adding a dependency, prefer that approach.
 
 ---
-
----
-
-## Screenshots
-
-![screenshot](ss/1.png)
-![screenshot](ss/2.png)
-![screenshot](ss/3.png)
-
-```
 
