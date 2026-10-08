@@ -1,2544 +1,615 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#efeee8" />
-  <title>RiceForge</title>
-  <style>
-*{box-sizing:border-box}
-
-:root{
-  --paper:#efeee8;
-  --paper-2:#dfddd4;
-  --ink:#11110f;
-  --muted:#77736b;
-  --line:#aaa69b;
-  --accent-ui:#ff4b2b;
-
-  --theme-bg:#11110f;
-  --theme-surface:#1b1b18;
-  --theme-fg:#efeee8;
-  --theme-accent:#ff4b2b;
-
-  --theme-radius:0px;
-  --theme-gap:8px;
-  --theme-border:2px;
-  --theme-opacity:1;
-}
-
-html,body{width:100%;height:100%;margin:0}
-body{
-  background:var(--paper);
-  color:var(--ink);
-  font-family:Arial,Helvetica,sans-serif;
-  overflow:hidden;
-}
-button,input{font:inherit}
-button{color:inherit}
-
-.app{
-  width:100vw;height:100vh;
-  display:grid;
-  grid-template-rows:64px minmax(0,1fr) 92px;
-}
-
-.topbar{
-  display:grid;
-  grid-template-columns:240px minmax(0,1fr) auto;
-  border-bottom:1px solid var(--ink);
-  background:var(--paper);
-}
-.brand{
-  display:flex;align-items:center;
-  padding:0 22px;border-right:1px solid var(--ink);
-  font-weight:900;font-size:19px;letter-spacing:-.07em;
-}
-.brand span{color:var(--accent-ui)}
-.nav{display:flex;min-width:0}
-.nav-btn,.plain-btn,.accent-btn{
-  border:0;border-right:1px solid var(--ink);
-  background:transparent;padding:0 20px;
-  font:700 10px/1 monospace;letter-spacing:.1em;cursor:pointer;
-}
-.nav-btn.active,.nav-btn:hover{background:var(--ink);color:var(--paper)}
-.top-actions{display:flex}
-.status{
-  display:flex;align-items:center;gap:8px;padding:0 18px;
-  font:700 10px monospace;letter-spacing:.1em;
-}
-.status i,.valid i{
-  width:7px;height:7px;display:block;border-radius:50%;background:var(--accent-ui);
-}
-.plain-btn{border-left:1px solid var(--ink);border-right:0}
-.plain-btn:hover{background:var(--paper-2)}
-.accent-btn{
-  border-left:1px solid var(--ink);border-right:0;
-  background:var(--ink);color:var(--paper);
-}
-.accent-btn:hover{background:var(--accent-ui);color:#fff}
-
-.workspace{
-  display:grid;grid-template-columns:340px minmax(0,1fr);min-height:0;
-}
-.sidebar{
-  overflow:auto;border-right:1px solid var(--ink);background:var(--paper);
-}
-.panel{padding:24px;border-bottom:1px solid var(--ink)}
-.panel-head{
-  display:flex;justify-content:space-between;margin-bottom:22px;
-  font:700 10px monospace;letter-spacing:.11em;
-}
-.panel-head span,.preview-head>div:first-child span,.palette-title span{color:var(--accent-ui)}
-.micro{margin:0 0 10px;color:var(--muted);font:700 9px monospace;letter-spacing:.12em}
-.hidden-panel{display:none}
-
-.button-grid{display:grid}
-.button-grid.two{grid-template-columns:1fr 1fr}
-.choice{
-  min-height:48px;border:1px solid var(--ink);background:transparent;
-  font:700 10px monospace;cursor:pointer;
-}
-.button-grid.two .choice:nth-child(even){border-left:0}
-.shape-grid .choice:nth-child(n+3){border-top:0}
-.choice.active{background:var(--accent-ui);color:#fff}
-.choice:hover:not(.active){background:var(--ink);color:var(--paper)}
-
-.composer-block{
-  margin-top:22px;
-  padding-top:18px;
-  border-top:1px solid var(--ink);
-}
-.select-row{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  align-items:center;
-  min-height:42px;
-  border-top:1px solid var(--line);
-  font:700 9px monospace;
-}
-.select-row:last-child{border-bottom:1px solid var(--line)}
-.select-row select{
-  width:100%;
-  height:100%;
-  min-height:40px;
-  border:0;
-  border-left:1px solid var(--ink);
-  border-radius:0;
-  background:var(--paper);
-  color:var(--ink);
-  padding:0 8px;
-  font:700 9px monospace;
-}
-.controls{display:flex;flex-direction:column;gap:26px}
-.slider-control .row{
-  display:flex;justify-content:space-between;margin-bottom:10px;font:700 10px monospace;
-}
-.slider-control .row span{color:var(--accent-ui)}
-input[type="range"]{
-  appearance:none;width:100%;height:4px;background:var(--line);outline:none;
-}
-input[type="range"]::-webkit-slider-thumb{
-  appearance:none;width:18px;height:18px;border:0;border-radius:0;background:var(--ink);cursor:pointer;
-}
-input[type="range"]::-moz-range-thumb{
-  width:18px;height:18px;border:0;border-radius:0;background:var(--ink);cursor:pointer;
-}
-
-.preview-pane{
-  display:grid;grid-template-rows:60px minmax(0,1fr);
-  min-width:0;min-height:0;background:var(--paper-2);
-}
-.preview-head{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 22px;border-bottom:1px solid var(--ink);
-  font:700 10px monospace;letter-spacing:.11em;
-}
-.preview-head>div:first-child span{margin-right:14px}
-.valid{display:flex;align-items:center;gap:10px}
-
-.canvas{
-  position:relative;display:grid;place-items:center;overflow:hidden;
-  background:
-    linear-gradient(rgba(17,17,15,.18) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(17,17,15,.18) 1px,transparent 1px);
-  background-size:44px 44px;
-}
-.canvas::after{
-  content:"";position:absolute;inset:20px;border:1px solid rgba(17,17,15,.3);pointer-events:none;
-}
-.canvas-label,.canvas-footer{
-  position:absolute;z-index:5;font:700 9px monospace;letter-spacing:.1em;
-}
-.canvas-label{top:36px;left:36px}
-.canvas-footer{
-  right:36px;bottom:36px;display:flex;gap:22px;color:var(--muted);
-}
-.preview-wrap{
-  width:100%;
-  height:100%;
-  min-height:0;
-  display:grid;
-  place-items:center;
-  position:relative;
-  z-index:3;
-}
-
-.waybar-preview{
-  width:min(900px,82%);
-  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
-  gap:var(--theme-gap);padding:7px;
-  background:color-mix(in srgb,var(--theme-bg) calc(var(--theme-opacity)*100%),transparent);
-  color:var(--theme-fg);
-  border:var(--theme-border) solid var(--theme-accent);
-  border-radius:var(--theme-radius);
-  box-shadow:10px 10px 0 rgba(17,17,15,.22);
-}
-.waybar-zone{display:flex;align-items:center;gap:var(--theme-gap);min-width:0}
-.waybar-zone.center{justify-content:center}
-.waybar-zone.right{justify-content:flex-end}
-.module{
-  min-height:34px;display:flex;align-items:center;gap:8px;padding:0 12px;white-space:nowrap;
-  background:var(--theme-surface);color:var(--theme-fg);
-  border:var(--theme-border) solid var(--theme-accent);
-  border-radius:var(--theme-radius);font:700 11px monospace;
-}
-.workspaces{padding:0}
-.workspaces span,.workspaces b{width:32px;height:32px;display:grid;place-items:center}
-.workspaces b{background:var(--theme-accent);color:var(--theme-bg)}
-.waybar-preview.pill,
-.waybar-preview.pill .module,
-.waybar-preview.pill .workspaces span,
-.waybar-preview.pill .workspaces b,
-.waybar-preview.pill #workspaces button{
-  border-radius:999px
-}
-.waybar-preview.sharp,
-.waybar-preview.sharp .module{
-  border-radius:0
-}
-
-.waybar-preview.sharp{
-  border-width:var(--theme-border);
-}
-
-.waybar-preview.sharp .module{
-  border-width:var(--theme-border);
-}
-.waybar-preview.floating{border-color:transparent;background:transparent;box-shadow:none}
-.waybar-preview.floating .module{box-shadow:6px 6px 0 rgba(17,17,15,.24)}
-
-.waybar-preview.notched{
-  clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px));
-}
-.waybar-preview.notched .module{
-  clip-path:polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,9px 100%,0 calc(100% - 9px));
-  border-radius:0;
-}
-
-.waybar-preview.segmented{
-  background:transparent;
-  border-color:transparent;
-  box-shadow:none;
-}
-.waybar-preview.segmented .module{
-  border-left-width:0;
-  border-right-width:0;
-  border-radius:0;
-  box-shadow:inset 4px 0 0 var(--theme-accent);
-}
-.waybar-preview.segmented .waybar-zone .module:first-child{
-  border-left-width:var(--theme-border);
-}
-
-.waybar-preview.underline{
-  background:transparent;
-  border-color:transparent;
-  box-shadow:none;
-}
-.waybar-preview.underline .module{
-  background:transparent;
-  border:0;
-  border-bottom:var(--theme-border) solid var(--theme-accent);
-  border-radius:0;
-}
-
-.waybar-preview.frame{
-  background:transparent;
-  border:var(--theme-border) solid var(--theme-accent);
-  box-shadow:8px 8px 0 var(--theme-accent);
-}
-.waybar-preview.frame .module{
-  background:transparent;
-  border-color:transparent;
-  border-bottom:var(--theme-border) solid var(--theme-accent);
-  border-radius:0;
-}
-
-.wofi-preview.notched,
-.wofi-preview.notched .wofi-search,
-.wofi-preview.notched .wofi-entry{
-  border-radius:0;
-}
-.wofi-preview.notched{
-  clip-path:polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,28px 100%,0 calc(100% - 28px));
-}
-
-.wofi-preview.segmented .wofi-entry{
-  border-left:var(--theme-border) solid var(--theme-accent);
-}
-.wofi-preview.segmented .wofi-entry.active{
-  box-shadow:inset 8px 0 0 var(--theme-accent);
-}
-
-.wofi-preview.underline{
-  border-color:transparent;
-  box-shadow:none;
-}
-.wofi-preview.underline .wofi-search{
-  border:0;
-  border-bottom:var(--theme-border) solid var(--theme-accent);
-  border-radius:0;
-}
-.wofi-preview.underline .wofi-entry{
-  border-bottom:1px solid color-mix(in srgb,var(--theme-accent) 45%,transparent);
-}
-
-.wofi-preview.frame{
-  background:transparent;
-  box-shadow:10px 10px 0 var(--theme-accent);
-}
-.wofi-preview.frame .wofi-search,
-.wofi-preview.frame .wofi-entry{
-  background:var(--theme-surface);
-}
-
-/* COMPOSER LAYERS */
-.waybar-preview.outer-floating{
-  background:transparent!important;
-  border-color:transparent!important;
-  box-shadow:none!important;
-}
-.waybar-preview.outer-frame{
-  background:transparent!important;
-  box-shadow:8px 8px 0 var(--theme-accent)!important;
-}
-.waybar-preview.outer-underline{
-  background:transparent!important;
-  border-color:transparent!important;
-  border-bottom:var(--theme-border) solid var(--theme-accent)!important;
-  box-shadow:none!important;
-}
-
-.waybar-preview.modules-square .module{border-radius:0!important}
-.waybar-preview.modules-pill .module{border-radius:999px!important}
-.waybar-preview.modules-pill .workspaces span,
-.waybar-preview.modules-pill .workspaces b{border-radius:999px!important}
-.waybar-preview.modules-notched .module{
-  border-radius:0!important;
-  clip-path:polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,9px 100%,0 calc(100% - 9px));
-}
-.waybar-preview.modules-underline .module{
-  background:transparent!important;
-  border:0!important;
-  border-bottom:var(--theme-border) solid var(--theme-accent)!important;
-  border-radius:0!important;
-}
-
-.waybar-preview.workspace-outline .workspaces b{
-  background:transparent!important;
-  color:var(--theme-accent)!important;
-  outline:var(--theme-border) solid var(--theme-accent);
-  outline-offset:calc(var(--theme-border) * -1);
-}
-.waybar-preview.workspace-underline .workspaces b{
-  background:transparent!important;
-  color:var(--theme-fg)!important;
-  border-bottom:3px solid var(--theme-accent);
-}
-.waybar-preview.workspace-dot .workspaces b{
-  background:transparent!important;
-  color:var(--theme-fg)!important;
-  position:relative;
-}
-.waybar-preview.workspace-dot .workspaces b::after{
-  content:"";
-  position:absolute;
-  width:5px;height:5px;
-  border-radius:50%;
-  background:var(--theme-accent);
-  bottom:3px;left:50%;
-  transform:translateX(-50%);
-}
-
-.waybar-preview.clock-accent .clock-module{
-  background:var(--theme-accent)!important;
-  color:var(--theme-bg)!important;
-}
-.waybar-preview.clock-transparent .clock-module{
-  background:transparent!important;
-  border-color:transparent!important;
-}
-.waybar-preview.clock-pill .clock-module{border-radius:999px!important}
-
-.waybar-preview.shadow-hard .module,
-.wofi-preview.shadow-hard{
-  box-shadow:6px 6px 0 rgba(17,17,15,.28)!important;
-}
-.waybar-preview.shadow-accent .module,
-.wofi-preview.shadow-accent{
-  box-shadow:6px 6px 0 var(--theme-accent)!important;
-}
-
-.wofi-preview.modules-square .wofi-search,
-.wofi-preview.modules-square .wofi-entry{border-radius:0!important}
-.wofi-preview.modules-pill .wofi-search,
-.wofi-preview.modules-pill .wofi-entry{border-radius:999px!important}
-.wofi-preview.modules-notched .wofi-search,
-.wofi-preview.modules-notched .wofi-entry{
-  border-radius:0!important;
-  clip-path:polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,9px 100%,0 calc(100% - 9px));
-}
-.wofi-preview.modules-underline .wofi-search,
-.wofi-preview.modules-underline .wofi-entry{
-  border-radius:0!important;
-  border-left:0!important;
-  border-right:0!important;
-  border-top:0!important;
-  border-bottom:var(--theme-border) solid var(--theme-accent)!important;
-}
-
-.wofi-preview.entry-solid .wofi-entry{
-  background:transparent!important;
-  border:0!important;
-}
-.wofi-preview.entry-outline .wofi-entry{
-  background:transparent!important;
-  border:var(--theme-border) solid var(--theme-accent)!important;
-  margin-bottom:6px;
-}
-.wofi-preview.entry-underline .wofi-entry{
-  background:transparent!important;
-  border-left:0!important;
-  border-right:0!important;
-  border-top:0!important;
-  border-bottom:var(--theme-border) solid var(--theme-accent)!important;
-  border-radius:0!important;
-}
-.wofi-preview.entry-ghost .wofi-entry{
-  background:transparent!important;
-  border-color:transparent!important;
-}
-.wofi-preview.entry-ghost .wofi-entry.active{
-  background:color-mix(in srgb,var(--theme-accent) 20%,transparent)!important;
-  color:var(--theme-fg)!important;
-}
-
-.wofi-preview.search-underline .wofi-search{
-  background:transparent!important;
-  border-left:0!important;
-  border-right:0!important;
-  border-top:0!important;
-  border-bottom:var(--theme-border) solid var(--theme-accent)!important;
-  border-radius:0!important;
-}
-.wofi-preview.search-ghost .wofi-search{
-  background:transparent!important;
-  border-color:transparent!important;
-}
-
-
-.waybar-preview.brutal .module,
-.waybar-preview.sharp .module,
-.wofi-preview,
-.wofi-search{
-  outline:0 solid transparent;
-}
-
-.waybar-preview.brutal,
-.waybar-preview.sharp,
-.waybar-preview.brutal .module,
-.waybar-preview.sharp .module,
-.wofi-preview,
-.wofi-search{
-  transition:border-width .08s linear,border-color .08s linear,border-radius .12s ease;
-}
-
-
-.wofi-preview{
-  width:min(560px,65%);
-  padding:14px;
-  background:color-mix(in srgb,var(--theme-bg) calc(var(--theme-opacity)*100%),transparent);
-  color:var(--theme-fg);
-  border:var(--theme-border) solid var(--theme-accent);
-  border-radius:var(--theme-radius);
-  box-shadow:none;
-}
-.wofi-search{
-  display:flex;gap:12px;padding:15px;margin-bottom:12px;background:var(--theme-surface);
-  border:var(--theme-border) solid var(--theme-accent);border-radius:var(--theme-radius);
-  color:color-mix(in srgb,var(--theme-fg) 65%,transparent);font:700 11px monospace;
-}
-.wofi-entry{
-  min-height:56px;
-  display:grid;
-  grid-template-columns:40px 1fr auto;
-  align-items:center;
-  padding:0 14px;
-  margin:calc(var(--theme-gap) / 2) 0;
-  background:transparent;
-  border:0;
-  border-radius:var(--theme-radius);
-}
-.wofi-entry b{font-size:13px}
-.wofi-entry small{color:color-mix(in srgb,var(--theme-fg) 55%,transparent);font:700 9px monospace}
-.wofi-entry.active{background:var(--theme-accent);color:var(--theme-bg)}
-.wofi-entry.active small{color:var(--theme-bg)}
-
-/* WOFI GTK-SAFE PREVIEW
-   Mirrors the exact subset generated for GTK. */
-.wofi-preview{
-  overflow:hidden;
-  box-shadow:none;
-}
-.wofi-preview .wofi-search{
-  box-shadow:none!important;
-}
-.wofi-preview .wofi-entry{
-  box-shadow:none;
-}
-
-
-
-.wofi-preview-frame{
-  width:min(660px,72%);
-  height:470px;
-  border:0;
-  background:transparent;
-  overflow:hidden;
-  display:block;
-}
-
-.modules-editor{
-  width:min(1000px,84%);
-  display:grid;grid-template-columns:repeat(3,1fr);
-  border:1px solid var(--ink);
-  background:var(--paper);
-  box-shadow:12px 12px 0 rgba(17,17,15,.2);
-}
-.zone-editor{min-height:360px;border-right:1px solid var(--ink)}
-.zone-editor:last-child{border-right:0}
-.zone-head{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:14px;border-bottom:1px solid var(--ink);
-  font:700 10px monospace;
-}
-.zone-head small{font-size:7px;color:var(--muted)}
-.dropzone{padding:12px;display:flex;flex-direction:column;gap:8px}
-.zone-chip{
-  border:1px solid var(--ink);background:var(--paper-2);
-  padding:12px;font:700 10px monospace;cursor:pointer;
-}
-.zone-chip:hover{background:var(--accent-ui);color:#fff}
-.zone-chip.selected{background:var(--ink);color:var(--paper)}
-.inspector-empty{
-  padding:16px;
-  border:1px dashed var(--line);
-  color:var(--muted);
-  font:700 9px monospace;
-  text-align:center;
-}
-.module-inspector{display:flex;flex-direction:column;gap:8px}
-.inspector-title{
-  display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:6px;
-  font:700 10px monospace;
-}
-.inspector-title button{
-  border:1px solid var(--ink);background:transparent;padding:7px 10px;
-  font:700 8px monospace;cursor:pointer;
-}
-.inspector-title button:hover{background:var(--ink);color:var(--paper)}
-.module-inspector .select-row input[type="color"]{
-  width:100%;height:40px;border:0;border-left:1px solid var(--ink);padding:0;background:var(--paper);
-}
-.module-inspector .select-row input[type="number"],
-.module-inspector .select-row input[type="text"]{
-  width:100%;height:40px;border:0;border-left:1px solid var(--ink);
-  background:var(--paper);padding:0 8px;font:700 9px monospace;color:var(--ink);
-}
-.module-library{display:grid;grid-template-columns:1fr 1fr}
-.library-btn{
-  min-height:44px;border:1px solid var(--ink);background:transparent;
-  margin:-1px 0 0 -1px;font:700 9px monospace;cursor:pointer;
-}
-.library-btn:hover{background:var(--accent-ui);color:#fff}
-.zone-picker{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:5px;
-}
-.zone-picker button{
-  border:1px solid var(--ink);background:transparent;padding:6px 0;
-  font:700 8px monospace;cursor:pointer;
-}
-.zone-picker button:hover{background:var(--ink);color:var(--paper)}
-
-.preset-list{display:flex;flex-direction:column;gap:8px}
-.preset-card{
-  border:1px solid var(--ink);background:transparent;text-align:left;
-  padding:12px;cursor:pointer;
-}
-.preset-card:hover{background:var(--ink);color:var(--paper)}
-.preset-card b{display:block;font-size:12px}
-.preset-card span{display:block;margin-top:4px;color:var(--muted);font:700 8px monospace}
-
-.presets-view{
-  width:min(1050px,86%);
-  max-height:72vh;
-  overflow:auto;
-  border:1px solid var(--ink);
-  background:var(--paper);
-  box-shadow:14px 14px 0 rgba(17,17,15,.22);
-}
-.preset-grid{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-}
-.preset-live-card{
-  border-right:1px solid var(--ink);
-  border-bottom:1px solid var(--ink);
-  min-height:220px;
-  background:var(--paper);
-  cursor:pointer;
-}
-.preset-live-card:nth-child(even){border-right:0}
-.preset-live-meta{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  padding:12px 14px;
-  border-bottom:1px solid var(--ink);
-  font:700 9px monospace;
-}
-.preset-live-meta span:last-child{color:var(--muted)}
-.preset-mini-stage{
-  padding:20px;
-  min-height:165px;
-  display:grid;
-  place-items:center;
-}
-.preset-mini-bar{
-  width:100%;
-  display:grid;
-  grid-template-columns:1fr auto 1fr;
-  align-items:center;
-  gap:6px;
-  padding:6px;
-}
-.preset-mini-zone{
-  display:flex;
-  gap:6px;
-  align-items:center;
-}
-.preset-mini-zone.center{justify-content:center}
-.preset-mini-zone.right{justify-content:flex-end}
-.preset-mini-module{
-  min-height:28px;
-  display:flex;
-  align-items:center;
-  padding:0 9px;
-  font:700 9px monospace;
-  white-space:nowrap;
-}
-.preset-live-card:hover .preset-live-meta{
-  background:var(--ink);
-  color:var(--paper);
-}
-.preset-live-card:hover .preset-live-meta span:last-child{
-  color:var(--paper-2);
-}
-@media(max-width:900px){
-  .preset-grid{grid-template-columns:1fr}
-  .preset-live-card{border-right:0}
-}
-
-.full-btn{
-  width:100%;min-height:48px;border:1px solid var(--ink);
-  background:transparent;font:700 10px monospace;cursor:pointer;margin-bottom:8px;
-}
-.full-btn:hover{background:var(--ink);color:var(--paper)}
-
-.code-view{
-  width:min(1100px,92%);
-  height:calc(100% - 96px);
-  min-height:300px;
-  max-height:720px;
-  overflow:hidden;
-  display:grid;
-  grid-template-rows:50px minmax(0,1fr);
-  border:1px solid var(--ink);
-  background:#11110f;
-  color:#efeee8;
-  box-shadow:14px 14px 0 rgba(17,17,15,.22);
-}
-.code-toolbar{
-  position:relative;
-  z-index:2;
-  display:flex;
-  justify-content:space-between;
-  min-height:50px;
-  border-bottom:1px solid #45433d;
-  background:#11110f;
-}
-.code-toolbar>div{display:flex}
-.code-tab,.copy-btn{
-  border:0;
-  border-right:1px solid #45433d;
-  background:transparent;
-  color:#efeee8;
-  padding:0 16px;
-  font:700 10px monospace;
-  cursor:pointer;
-}
-.code-tab.active,.code-tab:hover,.copy-btn:hover{background:#ff4b2b;color:white}
-.copy-btn{border-right:0;border-left:1px solid #45433d}
-.code-view pre{
-  min-width:0;
-  min-height:0;
-  height:100%;
-  margin:0;
-  padding:18px 20px 28px;
-  overflow:auto;
-  overscroll-behavior:contain;
-  font:11px/1.5 monospace;
-  white-space:pre;
-  tab-size:2;
-}
-.code-view code{
-  display:block;
-  min-width:max-content;
-}
-
-.palette{
-  display:grid;grid-template-columns:180px repeat(4,minmax(150px,1fr)) auto;
-  border-top:1px solid var(--ink);background:var(--paper);
-}
-.palette-title,.color-item{border-right:1px solid var(--ink)}
-.palette-title{
-  display:flex;align-items:center;gap:12px;padding:0 20px;font:700 10px monospace;
-}
-.color-item{
-  display:flex;align-items:center;gap:12px;padding:0 16px;cursor:pointer;
-}
-.color-item input{
-  width:32px;height:32px;padding:0;border:1px solid var(--ink);border-radius:0;background:none;cursor:pointer;
-}
-.color-item input::-webkit-color-swatch-wrapper{padding:0}
-.color-item input::-webkit-color-swatch{border:0}
-.color-item div{display:flex;flex-direction:column;min-width:0}
-.color-item small{color:var(--muted);font:700 8px monospace;letter-spacing:.08em}
-.color-item b{margin-top:3px;font:700 10px monospace}
-.randomize{
-  border:0;padding:0 24px;background:var(--accent-ui);color:#fff;
-  font:700 10px monospace;cursor:pointer;
-}
-.randomize:hover{background:var(--ink)}
-
-.target-waybar-only.hidden-by-target{display:none!important}
-.wofi-unsupported.hidden-by-target{display:none!important}
-.wofi-composer-extras{margin-top:8px}
-.dropzone.drag-over{
-  outline:3px solid var(--accent-ui);
-  outline-offset:-3px;
-  background:color-mix(in srgb,var(--accent-ui) 8%,var(--paper));
-}
-.zone-chip{
-  user-select:none;
-}
-.zone-chip[draggable="true"]{
-  cursor:grab;
-}
-.zone-chip.dragging{
-  opacity:.35;
-  cursor:grabbing;
-}
-.drag-hint{
-  padding:8px 10px;
-  margin-bottom:8px;
-  border:1px dashed var(--line);
-  color:var(--muted);
-  font:700 8px monospace;
-}
-.hidden{display:none!important}
-
-@media(max-width:950px){
-  .workspace{grid-template-columns:280px minmax(0,1fr)}
-  .topbar{grid-template-columns:180px 1fr auto}
-  .nav-btn{padding:0 12px}
-  .status{display:none}
-  .palette{grid-template-columns:repeat(4,1fr)}
-  .palette-title,.randomize{display:none}
-  .modules-editor{grid-template-columns:1fr;height:60vh;overflow:auto}
-  .zone-editor{border-right:0;border-bottom:1px solid var(--ink)}
-}
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#efeee8">
+<title>RiceForge — Offline Rice Studio</title>
+<style>
+:root{--paper:#efeee8;--paper2:#e4e1d8;--ink:#11110f;--muted:#6f6c64;--line:#bab6ab;--hot:#ff4b2b;--bg:#11110f;--surface:#1b1b18;--fg:#efeee8;--accent:#ff4b2b}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%}body{background:var(--paper);color:var(--ink);font-family:Arial,Helvetica,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--hot);outline-offset:2px}button:disabled{opacity:.35;cursor:not-allowed}
+.app{height:100dvh;min-height:460px;display:grid;grid-template-rows:62px minmax(0,1fr) 85px;overflow:hidden}
+.top{display:flex;border-bottom:1px solid var(--ink);min-width:0}.brand{width:232px;flex-shrink:0;display:flex;align-items:center;padding:0 21px;border-right:1px solid var(--ink);font-size:19px;letter-spacing:-.065em;font-weight:900}.brand span{color:var(--hot)}.topnav{display:flex;min-width:0}.topnav button,.top-action{background:transparent;border:0;border-right:1px solid var(--ink);padding:0 17px;font:700 10px monospace;letter-spacing:.06em}.topnav button.active,.topnav button:hover{background:var(--ink);color:var(--paper)}.topright{margin-left:auto;display:flex;min-width:0}.status{display:flex;align-items:center;gap:8px;padding:0 17px;font:700 10px monospace;white-space:nowrap}.dot{display:inline-block;width:7px;height:7px;background:var(--hot);border-radius:50%}.top-action:hover{background:var(--paper2)}.export{background:var(--ink);color:var(--paper);border:0;padding:0 22px;font:700 10px monospace}.export:hover{background:var(--hot)}
+.workspace{display:grid;grid-template-columns:340px minmax(0,1fr);min-height:0}.sidebar{overflow-y:auto;min-height:0;border-right:1px solid var(--ink);background:var(--paper)}.panel{padding:22px;border-bottom:1px solid var(--ink)}.panelhead{display:flex;justify-content:space-between;font:700 10px monospace;letter-spacing:.08em;margin-bottom:20px}.panelhead .index,.index{color:var(--hot)}.eyebrow{font:700 9px monospace;color:var(--muted);letter-spacing:.09em;margin:14px 0 9px}.choices{display:grid;grid-template-columns:1fr 1fr}.choices.three{grid-template-columns:repeat(3,1fr)}.choice{min-height:42px;border:1px solid var(--ink);margin:-1px -1px 0 0;background:transparent;font:700 10px monospace;padding:6px;white-space:normal}.choice.active{background:var(--hot);color:white}.choice:hover:not(.active){background:var(--ink);color:var(--paper)}.field{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:8px;min-height:43px;border-top:1px solid var(--line)}.field:last-child{border-bottom:1px solid var(--line)}.field>span{font:700 9px monospace;letter-spacing:.03em}.field select,.field input[type=number],.field input[type=text]{width:100%;min-width:0;height:38px;border:0;border-left:1px solid var(--ink);padding:0 8px;background:var(--paper);color:var(--ink);font:700 10px monospace}.field input[type=color]{width:100%;height:38px;background:transparent;border:0;border-left:1px solid var(--ink);padding:4px 8px;cursor:pointer}.field input[type=checkbox]{justify-self:end;accent-color:var(--hot);width:18px;height:18px;margin:0 10px}.field.full{grid-template-columns:1fr}.field.full input{border:1px solid var(--line);margin-bottom:6px}.range{margin-top:18px}.range .rhead{display:flex;justify-content:space-between;font:700 10px monospace;margin-bottom:9px}.range output{color:var(--hot)}.range input{width:100%;height:4px;accent-color:var(--ink);cursor:pointer}.note{font:10px/1.65 monospace;color:var(--muted)}.full-btn{width:100%;min-height:40px;margin:6px 0 0;border:1px solid var(--ink);background:transparent;font:700 10px monospace}.full-btn:hover{background:var(--ink);color:var(--paper)}.section-title{font:800 13px Arial;margin:14px 0 8px}.sidebar [hidden],.stage [hidden],[hidden]{display:none!important}
+.main{display:grid;grid-template-rows:57px minmax(0,1fr);min-width:0;min-height:0;background:var(--paper2)}.stagehead{display:flex;align-items:center;justify-content:space-between;padding:0 22px;border-bottom:1px solid var(--ink);font:700 10px monospace;letter-spacing:.07em}.stagehead .index{margin-right:12px}.stage{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;overflow:hidden;padding:52px 26px;background-image:linear-gradient(#11110f20 1px,transparent 1px),linear-gradient(90deg,#11110f20 1px,transparent 1px);background-size:42px 42px}.stage:before{content:"";pointer-events:none;position:absolute;inset:18px;border:1px solid #11110f44}.stage-label{position:absolute;z-index:2;left:32px;top:30px;font:700 10px monospace;letter-spacing:.09em}.stage-foot{position:absolute;right:32px;bottom:30px;z-index:2;font:700 9px monospace;color:var(--muted);white-space:nowrap}
+.waybar-shell{width:min(900px,97%);min-height:50px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:var(--gap,8px);align-items:center;padding:6px 9px;overflow:visible;color:var(--fg);font:700 11px monospace;min-width:0}.zone{display:flex;align-items:center;min-width:0;gap:var(--gap,8px)}.zone.mid{justify-content:center}.zone.right{justify-content:flex-end}.preview-module{min-height:34px;display:flex;align-items:center;white-space:nowrap;font:700 11px monospace;max-width:100%;border-style:solid}.preview-module .display{overflow:hidden;text-overflow:ellipsis}.preview-workspaces{padding:2px 3px!important;gap:2px}.ws-btn{height:29px;min-width:29px;display:grid;place-items:center;border-style:solid;border-width:0;position:relative;line-height:1;font:700 11px monospace;flex-shrink:0}.ws-btn.active.ws-dot:after{content:"";height:5px;width:5px;background:var(--accent);border-radius:50%;position:absolute;bottom:0;left:50%;transform:translateX(-50%)}.ws-btn.active.ws-underline{border-bottom-style:solid}.preview-module .display{font-family:inherit}
+.wofi-frame{width:min(950px,98%);height:min(610px,98%);border:0;background:transparent;display:block;position:relative;z-index:1}.stage.wofi-stage{padding:20px}
+.editorzones{width:min(1080px,97%);display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--ink);box-shadow:10px 10px 0 #11110f24;background:var(--paper);max-height:90%;overflow:auto}.zonecolumn{min-height:245px;border-right:1px solid var(--ink)}.zonecolumn:last-child{border-right:0}.zoneheading{padding:13px;border-bottom:1px solid var(--ink);font:700 10px monospace}.dropzone{min-height:210px;padding:10px}.dropzone.dragover{outline:3px dashed var(--hot);outline-offset:-6px;background:#ff4b2b13}.placed{border:1px solid var(--ink);padding:7px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:4px;min-width:0}.placed.selected{background:var(--ink);color:var(--paper)}.placed .labelbtn{border:0;background:none;text-align:left;font:700 9px monospace;color:inherit;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}.tinybtn{border:1px solid currentColor;background:transparent;color:inherit;min-width:24px;height:24px;font:700 11px monospace}.placed[draggable]{cursor:grab}.placed.dragging{opacity:.4}.module-library{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.module-add{min-height:36px;border:1px solid var(--ink);background:var(--paper);font:700 9px monospace}.module-add:hover{background:var(--hot);color:white}.module-add:disabled{opacity:.35}.inspector{padding:10px 0}.inspectorTitle{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font:700 11px monospace}.inspector .field{grid-template-columns:1fr 1fr}.inspector-desc{font:9px/1.5 monospace;color:var(--muted);margin:6px 0}
+.presetgrid{width:min(1100px,96%);height:100%;max-height:100%;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-content:start}.presetcard{border:1px solid var(--ink);background:var(--paper);padding:0;text-align:left;cursor:pointer}.presetcard:hover{outline:3px solid var(--hot);outline-offset:-3px}.presettop{display:flex;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--ink);font:700 10px monospace}.presetview{height:95px;display:flex;align-items:center;justify-content:space-around;gap:12px;padding:12px}.presetpiece{padding:8px 12px;font:700 10px monospace;white-space:nowrap}
+.codewrap{height:100%;min-height:0;width:min(1100px,96%);display:grid;grid-template-rows:48px minmax(0,1fr);background:#11110f;color:#efeee8;border:1px solid var(--ink);box-shadow:9px 9px #11110f28}.codebar{display:flex;align-items:stretch;justify-content:space-between;border-bottom:1px solid #5d5a51;min-width:0}.codebar>div{display:flex}.codebar button{border:0;border-right:1px solid #5d5a51;background:transparent;color:inherit;padding:0 15px;font:700 10px monospace}.codebar button.active,.codebar button:hover{background:var(--hot);color:white}.codewrap pre{margin:0;padding:16px 19px 45px;overflow:auto;min-height:0;min-width:0;white-space:pre;font:12px/1.55 monospace;tab-size:2}.codewrap code{display:block;width:max-content;min-width:100%}
+.palette{display:grid;grid-template-columns:165px repeat(4,minmax(0,1fr)) 135px;background:var(--paper);border-top:1px solid var(--ink);min-width:0}.palette-title{display:flex;align-items:center;padding:0 18px;gap:12px;border-right:1px solid var(--ink);font:700 10px monospace}.paletteitem{display:flex;align-items:center;min-width:0;gap:11px;padding:0 13px;border-right:1px solid var(--ink)}.paletteitem input{width:30px;height:30px;border:1px solid var(--ink);padding:0;background:none;cursor:pointer;flex-shrink:0}.paletteitem input::-webkit-color-swatch-wrapper{padding:0}.paletteitem input::-webkit-color-swatch{border:0}.paletteitem div{display:flex;flex-direction:column;gap:4px;min-width:0}.paletteitem small{font:700 8px monospace;color:var(--muted)}.paletteitem strong{font:700 10px monospace;overflow:hidden;text-overflow:ellipsis}.random{background:var(--hot);color:white;border:0;font:700 9px monospace}.random:hover{background:var(--ink)}
+.dialog{position:fixed;inset:0;background:#11110faa;z-index:30;display:grid;place-items:center;padding:15px}.dialogbox{width:min(500px,96vw);max-height:88vh;overflow:auto;background:var(--paper);border:2px solid var(--ink);box-shadow:9px 9px 0 var(--hot);padding:22px}.dialogtop{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--ink);padding-bottom:14px}.dialogtop h2{margin:0;font-size:30px;letter-spacing:-.07em}.dialogtop button{border:1px solid var(--ink);background:transparent;padding:8px}.dialogbox .full-btn{text-align:left;padding-left:15px}.dialogbox p{font:11px/1.6 monospace;color:var(--muted)}.dialogbox textarea{width:100%;height:135px;resize:vertical;border:1px solid var(--ink);background:var(--paper);padding:12px;font:12px monospace}
+.toast{position:fixed;z-index:40;bottom:105px;right:20px;background:var(--ink);color:var(--paper);border-left:5px solid var(--hot);padding:14px 18px;font:700 11px monospace;max-width:min(460px,90vw)}
+@media(max-width:1080px){.workspace{grid-template-columns:290px minmax(0,1fr)}.brand{width:180px}.topnav button{padding:0 11px}.status{display:none}.palette{grid-template-columns:repeat(4,minmax(0,1fr))}.palette-title,.random{display:none}.stage{padding:40px 12px}.editorzones{grid-template-columns:1fr;overflow:auto}.zonecolumn{border-right:0;border-bottom:1px solid var(--ink);min-height:130px}.dropzone{min-height:85px}}
+@media(max-width:700px){.app{height:100dvh;grid-template-rows:56px minmax(0,1fr) 66px}.top{overflow-x:auto}.brand{width:auto;padding:0 12px}.top-action{display:none}.export{padding:0 12px}.workspace{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(190px,37%) minmax(0,1fr)}.sidebar{border-right:0;border-bottom:1px solid var(--ink)}.stagehead{padding:0 10px}.stage{padding:35px 8px}.stage-label{left:14px;top:16px}.stage-foot{right:13px;bottom:14px}.paletteitem{padding:0 7px;gap:5px}.paletteitem small{display:none}.paletteitem strong{font-size:8px}.paletteitem input{width:25px;height:25px}.presetgrid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div class="brand">RICE<span>FORGE</span></div>
-
-      <nav class="nav">
-        <button class="nav-btn active" data-view="design">DESIGN</button>
-        <button class="nav-btn" data-view="modules">MODULES</button>
-        <button class="nav-btn" data-view="presets">PRESETS</button>
-        <button class="nav-btn" data-view="code">CODE</button>
-      </nav>
-
-      <div class="top-actions">
-        <div class="status"><i></i> LOCAL</div>
-        <button class="plain-btn" id="saveThemeBtn">SAVE</button>
-        <button class="accent-btn" id="exportBtn">EXPORT ↗</button>
-      </div>
-    </header>
-
-    <main class="workspace">
-      <aside class="sidebar">
-        <section class="panel view-panel" data-panel="design">
-          <div class="panel-head"><span>01</span><b>TARGET</b></div>
-          <div class="button-grid two">
-            <button class="choice active" data-target="waybar">WAYBAR</button>
-            <button class="choice" data-target="wofi">WOFI</button>
-          </div>
-        </section>
-
-        <section class="panel view-panel" data-panel="design">
-          <div class="panel-head"><span>02</span><b>STYLE</b></div>
-          <p class="micro">SHAPE</p>
-
-          <div class="button-grid two shape-grid">
-            <button class="choice active" data-shape="brutal">NEO BRUTAL</button>
-            <button class="choice" data-shape="floating">FLOATING</button>
-            <button class="choice" data-shape="pill">PILL</button>
-            <button class="choice" data-shape="sharp">SHARP</button>
-            <button class="choice wofi-unsupported" data-shape="notched">NOTCHED</button>
-            <button class="choice" data-shape="segmented">SEGMENTED</button>
-            <button class="choice" data-shape="underline">UNDERLINE</button>
-            <button class="choice" data-shape="frame">FRAME</button>
-          </div>
-
-          <div class="composer-block">
-            <p class="micro">COMPOSER</p>
-
-            <label class="select-row target-waybar-only" id="outerStyleRow">
-              <span>OUTER BAR</span>
-              <select id="outerStyle">
-                <option value="solid">SOLID</option>
-                <option value="floating">FLOATING</option>
-                <option value="frame">FRAME</option>
-                <option value="underline">UNDERLINE</option>
-              </select>
-            </label>
-
-            <label class="select-row">
-              <span>MODULE SHAPE</span>
-              <select id="moduleShape">
-                <option value="square">SQUARE</option>
-                <option value="pill">PILL</option>
-                <option value="notched">NOTCHED</option>
-                <option value="underline">UNDERLINE</option>
-              </select>
-            </label>
-
-            <label class="select-row target-waybar-only" id="workspaceStyleRow">
-              <span>ACTIVE WORKSPACE</span>
-              <select id="workspaceStyle">
-                <option value="fill">FILLED</option>
-                <option value="outline">OUTLINE</option>
-                <option value="underline">UNDERLINE</option>
-                <option value="dot">DOT</option>
-              </select>
-            </label>
-
-            <label class="select-row target-waybar-only" id="clockStyleRow">
-              <span>CLOCK STYLE</span>
-              <select id="clockStyle">
-                <option value="same">SAME</option>
-                <option value="accent">ACCENT</option>
-                <option value="transparent">TRANSPARENT</option>
-                <option value="pill">PILL</option>
-              </select>
-            </label>
-
-            <label class="select-row">
-              <span>SHADOW</span>
-              <select id="shadowStyle">
-                <option value="none">NONE</option>
-                <option value="hard">HARD</option>
-                <option value="accent">ACCENT</option>
-              </select>
-            </label>
-
-            <div id="wofiComposerExtras" class="wofi-composer-extras hidden">
-              <p class="micro" style="margin-top:12px">WOFI RICE</p>
-              <div class="button-grid two wofi-rice-grid">
-                <button class="choice" data-wofi-rice="classic">CLASSIC</button>
-                <button class="choice" data-wofi-rice="raycast">RAYCAST</button>
-                <button class="choice" data-wofi-rice="pill">PILL</button>
-                <button class="choice" data-wofi-rice="terminal">TERMINAL</button>
-              </div>
-              <label class="select-row">
-                <span>ENTRY STYLE</span>
-                <select id="wofiEntryStyle">
-                  <option value="solid">SOLID</option>
-                  <option value="outline">OUTLINE</option>
-                  <option value="underline">UNDERLINE</option>
-                  <option value="ghost">GHOST</option>
-                </select>
-              </label>
-
-              <label class="select-row">
-                <span>SEARCH STYLE</span>
-                <select id="wofiSearchStyle">
-                  <option value="boxed">BOXED</option>
-                  <option value="underline">UNDERLINE</option>
-                  <option value="ghost">GHOST</option>
-                </select>
-              </label>
-            </div>
-          </div>
-        </section>
-
-        <section class="panel controls view-panel" data-panel="design">
-          <div class="slider-control">
-            <div class="row"><b>RADIUS</b><span id="radiusValue">0 PX</span></div>
-            <input id="radius" type="range" min="0" max="30" value="0" />
-          </div>
-
-          <div class="slider-control">
-            <div class="row"><b>GAP</b><span id="gapValue">8 PX</span></div>
-            <input id="gap" type="range" min="0" max="30" value="8" />
-          </div>
-
-          <div class="slider-control">
-            <div class="row"><b>BORDER</b><span id="borderValue">2 PX</span></div>
-            <input id="border" type="range" min="0" max="8" value="2" />
-          </div>
-
-          <div class="slider-control">
-            <div class="row"><b>OPACITY</b><span id="opacityValue">100%</span></div>
-            <input id="opacity" type="range" min="20" max="100" value="100" />
-          </div>
-        </section>
-
-        <section class="panel view-panel hidden-panel" data-panel="modules">
-          <div class="panel-head"><span>01</span><b>AVAILABLE MODULES</b></div>
-          <div id="moduleLibrary" class="module-library"></div>
-        </section>
-
-        <section class="panel view-panel hidden-panel" data-panel="modules">
-          <div class="panel-head"><span>02</span><b>BAR POSITION</b></div>
-          <div class="button-grid two">
-            <button class="choice active" data-position="top">TOP</button>
-            <button class="choice" data-position="bottom">BOTTOM</button>
-          </div>
-        </section>
-
-        <section class="panel view-panel hidden-panel" data-panel="modules">
-          <div class="panel-head"><span>03</span><b>MODULE INSPECTOR</b></div>
-          <div id="moduleInspectorEmpty" class="inspector-empty">SELECT A MODULE IN THE LAYOUT</div>
-
-          <div id="moduleInspector" class="module-inspector hidden">
-            <div class="inspector-title">
-              <b id="inspectorModuleName">CLOCK</b>
-              <button id="resetModuleBtn">RESET</button>
-            </div>
-
-            <label class="select-row">
-              <span>SHAPE</span>
-              <select id="moduleStyleShape">
-                <option value="inherit">INHERIT</option>
-                <option value="square">SQUARE</option>
-                <option value="pill">PILL</option>
-                <option value="notched">NOTCHED</option>
-                <option value="underline">UNDERLINE</option>
-              </select>
-            </label>
-
-            <label class="select-row">
-              <span>BACKGROUND</span>
-              <input id="moduleBg" type="color" value="#1b1b18">
-            </label>
-
-            <label class="select-row">
-              <span>TEXT</span>
-              <input id="moduleFg" type="color" value="#efeee8">
-            </label>
-
-            <label class="select-row">
-              <span>BORDER</span>
-              <input id="moduleBorderColor" type="color" value="#ff4b2b">
-            </label>
-
-            <label class="select-row">
-              <span>BORDER PX</span>
-              <input id="moduleBorderWidth" type="number" min="0" max="8" value="2">
-            </label>
-
-            <label class="select-row">
-              <span>RADIUS</span>
-              <input id="moduleRadius" type="number" min="0" max="40" value="0">
-            </label>
-
-            <label class="select-row">
-              <span>PADDING X</span>
-              <input id="modulePaddingX" type="number" min="0" max="30" value="12">
-            </label>
-
-            <label class="select-row">
-              <span>LABEL</span>
-              <input id="moduleLabel" type="text" value="">
-            </label>
-          </div>
-        </section>
-
-        <section class="panel view-panel hidden-panel" data-panel="presets">
-          <div class="panel-head"><span>01</span><b>PRESETS</b></div>
-          <div id="presetList" class="preset-list"></div>
-        </section>
-
-        <section class="panel view-panel hidden-panel" data-panel="code">
-          <div class="panel-head"><span>01</span><b>OUTPUT TARGET</b></div>
-          <div class="button-grid two" style="margin-bottom:12px">
-            <button class="choice active" data-code-target="waybar">WAYBAR</button>
-            <button class="choice" data-code-target="wofi">WOFI</button>
-          </div>
-          <div class="panel-head" style="margin-top:22px"><span>02</span><b>GENERATED FILES</b></div>
-          <button class="full-btn" data-code-file="config">CONFIG</button>
-          <button class="full-btn" data-code-file="style">STYLE.CSS</button>
-        </section>
-      </aside>
-
-      <section class="preview-pane">
-        <div class="preview-head">
-          <div><span>03</span> <b id="previewTitle">LIVE PREVIEW</b></div>
-          <div class="valid">CONFIG VALID <i></i></div>
-        </div>
-
-        <div id="mainCanvas" class="canvas">
-          <div class="canvas-label" id="canvasLabel">WAYBAR / THEME_001</div>
-
-          <div class="preview-wrap">
-            <section id="waybarPreview" class="waybar-preview brutal">
-              <div class="waybar-zone left" id="previewLeft"></div>
-              <div class="waybar-zone center" id="previewCenter"></div>
-              <div class="waybar-zone right" id="previewRight"></div>
-            </section>
-
-            <iframe
-              id="wofiPreview"
-              class="wofi-preview-frame hidden"
-              title="Isolated Wofi preview"
-              sandbox=""
-            ></iframe>
-
-            <section id="modulesEditor" class="modules-editor hidden">
-              <div class="drag-hint" style="grid-column:1/-1">DRAG MODULES TO REORDER OR MOVE BETWEEN LEFT / CENTER / RIGHT</div>
-              <div class="zone-editor">
-                <div class="zone-head"><span>LEFT</span><small>CLICK → EDIT / SHIFT+CLICK → REMOVE</small></div>
-                <div class="dropzone" data-zone="left"></div>
-              </div>
-              <div class="zone-editor">
-                <div class="zone-head"><span>CENTER</span><small>CLICK → EDIT / SHIFT+CLICK → REMOVE</small></div>
-                <div class="dropzone" data-zone="center"></div>
-              </div>
-              <div class="zone-editor">
-                <div class="zone-head"><span>RIGHT</span><small>CLICK → EDIT / SHIFT+CLICK → REMOVE</small></div>
-                <div class="dropzone" data-zone="right"></div>
-              </div>
-            </section>
-
-            <section id="presetsView" class="presets-view hidden">
-              <div id="presetGrid" class="preset-grid"></div>
-            </section>
-
-            <section id="codeView" class="code-view hidden">
-              <div class="code-toolbar">
-                <div>
-                  <button class="code-tab active" data-code-file="config" id="codeConfigTab">config.jsonc</button>
-                  <button class="code-tab" data-code-file="style">style.css</button>
-                </div>
-                <button id="copyCodeBtn" class="copy-btn">COPY</button>
-              </div>
-              <pre><code id="codeOutput"></code></pre>
-            </section>
-          </div>
-
-          <div class="canvas-footer">
-            <span id="bootStatus">ENGINE BOOTING…</span>
-            <span>NO TELEMETRY</span>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="palette">
-      <div class="palette-title"><span>04</span><b>PALETTE</b></div>
-
-      <label class="color-item">
-        <input type="color" id="backgroundColor" value="#11110f" />
-        <div><small>BACKGROUND</small><b id="backgroundText">#11110F</b></div>
-      </label>
-
-      <label class="color-item">
-        <input type="color" id="surfaceColor" value="#1b1b18" />
-        <div><small>SURFACE</small><b id="surfaceText">#1B1B18</b></div>
-      </label>
-
-      <label class="color-item">
-        <input type="color" id="textColor" value="#efeee8" />
-        <div><small>TEXT</small><b id="textText">#EFEEE8</b></div>
-      </label>
-
-      <label class="color-item">
-        <input type="color" id="accentColor" value="#ff4b2b" />
-        <div><small>ACCENT</small><b id="accentText">#FF4B2B</b></div>
-      </label>
-
-      <button id="randomizeBtn" class="randomize">RANDOMIZE ↻</button>
-    </footer>
-  </div>
-
-  <script>
-window.addEventListener("error", (event) => {
-  const el = document.getElementById("bootStatus");
-  if (el) {
-    el.textContent = "JS ERROR";
-    el.style.color = "#ff4b2b";
-  }
-  console.error("RiceForge error:", event.error || event.message);
-});
-
-const modules = {
-  "hyprland/workspaces": { label: "WORKSPACES", preview: "workspaces" },
-  "hyprland/window": { label: "WINDOW", preview: " FIREFOX" },
-  "clock": { label: "CLOCK", preview: "05:51" },
-  "network": { label: "NETWORK", preview: "" },
-  "pulseaudio": { label: "AUDIO", preview: " 72" },
-  "battery": { label: "BATTERY", preview: "BAT 83%" },
-  "cpu": { label: "CPU", preview: "CPU 12%" },
-  "memory": { label: "MEMORY", preview: "RAM 46%" },
-  "temperature": { label: "TEMP", preview: " 54°" },
-  "tray": { label: "TRAY", preview: "● ● ●" }
+<div class="app" id="app">
+<header class="top"><div class="brand">RICE<span>FORGE</span></div><nav class="topnav" aria-label="Editor sections"><button data-view="design" class="active">DESIGN</button><button data-view="layout" id="layoutNav">MODULES</button><button data-view="presets">PRESETS</button><button data-view="code">CODE</button></nav><div class="topright"><div class="status"><i class="dot"></i>OFFLINE</div><button class="top-action" id="saveBtn">SAVE</button><button class="top-action" id="importBtn">IMPORT</button><button class="export" id="exportBtn">EXPORT ↗</button></div></header>
+<main class="workspace">
+<aside class="sidebar" id="sidebar">
+<section class="panel" data-section="target"><div class="panelhead"><span class="index">01</span><b>TARGET</b></div><div class="choices"><button class="choice active" data-target="waybar">WAYBAR</button><button class="choice" data-target="wofi">WOFI</button></div></section>
+<section class="panel" data-section="design"><div class="panelhead"><span class="index">02</span><b>FOUNDATION</b></div><p class="eyebrow">STARTING SHAPE</p><div class="choices" id="shapeButtons"><button class="choice active" data-shape="brutal">NEO BRUTAL</button><button class="choice" data-shape="floating">FLOATING</button><button class="choice" data-shape="pill">PILL</button><button class="choice" data-shape="sharp">SHARP</button><button class="choice" data-shape="underline">UNDERLINE</button><button class="choice" data-shape="frame">FRAME</button></div><p class="note">Shape picks a starting configuration. Composer controls below can change each part independently.</p></section>
+<section class="panel" data-section="design" id="waybarComposer"><div class="panelhead"><span class="index">03</span><b>WAYBAR COMPOSER</b></div><label class="field"><span>OUTER BAR</span><select id="outerStyle"><option value="solid">SOLID</option><option value="floating">FLOATING</option><option value="frame">FRAME</option><option value="underline">UNDERLINE</option></select></label><label class="field"><span>MODULE SHAPE</span><select id="moduleShape"><option value="square">SQUARE</option><option value="pill">PILL</option><option value="rounded">ROUNDED</option><option value="underline">UNDERLINE</option></select></label><label class="field"><span>ACTIVE WORKSPACE</span><select id="workspaceStyle"><option value="fill">FILLED</option><option value="pill">PILL</option><option value="outline">OUTLINE</option><option value="underline">UNDERLINE</option><option value="dot">DOT</option></select></label><label class="field"><span>ACTIVE RADIUS</span><select id="activeRadiusMode"><option value="match">MATCH MODULE</option><option value="pill">ALWAYS PILL</option><option value="custom">CUSTOM PX</option></select></label><label class="field"><span>ACTIVE RADIUS PX</span><input id="activeRadius" type="number" min="0" max="80" value="12"></label><label class="field"><span>CLOCK STYLE</span><select id="clockStyle"><option value="same">SAME</option><option value="accent">ACCENT</option><option value="transparent">TRANSPARENT</option><option value="pill">PILL</option></select></label><label class="field"><span>BAR POSITION</span><select id="barPosition"><option value="top">TOP</option><option value="bottom">BOTTOM</option></select></label></section>
+<section class="panel" data-section="design" id="wofiComposer" hidden><div class="panelhead"><span class="index">03</span><b>WOFI COMPOSER</b></div><p class="eyebrow">WOFI RICE</p><div class="choices"><button class="choice" data-wofi-preset="classic">CLASSIC</button><button class="choice" data-wofi-preset="raycast">RAYCAST</button><button class="choice" data-wofi-preset="pill">PILL</button><button class="choice" data-wofi-preset="terminal">TERMINAL</button></div><label class="field"><span>ENTRY STYLE</span><select id="entryStyle"><option value="solid">SOLID</option><option value="outline">OUTLINE</option><option value="underline">UNDERLINE</option><option value="ghost">GHOST</option></select></label><label class="field"><span>SEARCH STYLE</span><select id="searchStyle"><option value="box">BOX</option><option value="underline">UNDERLINE</option><option value="ghost">GHOST</option></select></label><label class="field"><span>ENTRY SHAPE</span><select id="wofiItemShape"><option value="square">SQUARE</option><option value="pill">PILL</option><option value="rounded">ROUNDED</option></select></label><label class="field"><span>SELECTION</span><select id="selectionStyle"><option value="accent">ACCENT FILL</option><option value="outline">OUTLINE</option><option value="ghost">GHOST</option></select></label></section>
+<section class="panel" data-section="design"><div class="panelhead"><span class="index">04</span><b>GEOMETRY / TYPE</b></div><div class="range"><div class="rhead"><b>RADIUS</b><output id="radiusOut"></output></div><input type="range" id="radius" min="0" max="32" step="1"></div><div class="range"><div class="rhead"><b>GAP</b><output id="gapOut"></output></div><input type="range" id="gap" min="0" max="24" step="1"></div><div class="range"><div class="rhead"><b>BORDER</b><output id="borderOut"></output></div><input type="range" id="border" min="0" max="6" step="1"></div><div class="range"><div class="rhead"><b>OPACITY</b><output id="opacityOut"></output></div><input type="range" id="opacity" min="30" max="100" step="1"></div><label class="field"><span>SHADOW</span><select id="shadow"><option value="none">NONE</option><option value="hard">HARD</option><option value="accent">ACCENT</option></select></label><label class="field"><span>FONT FAMILY</span><input id="font" type="text" maxlength="100" placeholder="monospace"></label><label class="field"><span>FONT SIZE PX</span><input id="fontSize" type="number" min="9" max="24"></label></section>
+<section class="panel" data-section="design"><div class="panelhead"><span class="index">05</span><b>CUSTOM / ADVANCED</b></div><p class="note">Custom CSS is appended to your selected target's export. Browser previews cannot guarantee every GTK rule will match.</p><button id="customCssBtn" class="full-btn">EDIT CUSTOM CSS ↗</button><button id="themeExportBtn" class="full-btn">DOWNLOAD THEME JSON ↗</button></section>
+<section class="panel" data-section="layout" id="moduleLibraryPanel" hidden><div class="panelhead"><span class="index">01</span><b>ADD WAYBAR MODULES</b></div><p class="note">Click an available module to add it to the right zone. Drag existing modules between zones, or use the arrow buttons to reorder.</p><div class="module-library" id="moduleLibrary"></div></section>
+<section class="panel" data-section="layout" id="moduleInspectorPanel" hidden><div class="panelhead"><span class="index">02</span><b>MODULE INSPECTOR</b></div><p class="note" id="inspectorEmpty">Choose a placed module to customize it.</p><div class="inspector" id="inspector" hidden><div class="inspectorTitle"><b id="inspectorTitle">CLOCK</b><button class="tinybtn" id="resetModule" title="Clear overrides">↺</button></div><label class="field"><span>SHAPE</span><select id="modShape"><option value="inherit">INHERIT</option><option value="square">SQUARE</option><option value="rounded">ROUNDED</option><option value="pill">PILL</option><option value="underline">UNDERLINE</option></select></label><label class="field"><span>BACKGROUND</span><input type="color" id="modBg"></label><label class="field"><span>FOREGROUND</span><input type="color" id="modFg"></label><label class="field"><span>BORDER COLOR</span><input type="color" id="modBorderColor"></label><label class="field"><span>BORDER PX</span><input type="number" id="modBorder" min="0" max="8"></label><label class="field"><span>RADIUS PX</span><input type="number" id="modRadius" min="0" max="80"></label><label class="field"><span>PADDING X</span><input type="number" id="modPadding" min="0" max="30"></label><label class="field"><span>FORMAT</span><input id="modFormat" type="text" maxlength="140" placeholder="Optional Waybar format"></label><p class="inspector-desc">Changing a color creates an override. RESET restores inherited styling. Format is supported for clock, CPU, memory, battery, network, audio and temperature.</p><button class="full-btn" id="removeSelected">REMOVE MODULE</button></div></section>
+<section class="panel" data-section="layout" id="wofiLayoutPanel" hidden><div class="panelhead"><span class="index">01</span><b>WOFI LAYOUT</b></div><label class="field"><span>WIDTH PX</span><input id="wofiWidth" type="number" min="300" max="1100"></label><label class="field"><span>HEIGHT PX</span><input id="wofiHeight" type="number" min="200" max="800"></label><label class="field"><span>LOCATION</span><select id="wofiLocation"><option value="center">CENTER</option><option value="top">TOP</option><option value="bottom">BOTTOM</option><option value="left">LEFT</option><option value="right">RIGHT</option><option value="top_left">TOP LEFT</option><option value="top_right">TOP RIGHT</option><option value="bottom_left">BOTTOM LEFT</option><option value="bottom_right">BOTTOM RIGHT</option></select></label><label class="field"><span>COLUMNS</span><input id="wofiColumns" type="number" min="1" max="4"></label><label class="field"><span>HEIGHT MODE</span><select id="wofiHeightMode"><option value="pixels">PIXELS</option><option value="lines">ROWS</option></select></label><label class="field"><span>VISIBLE LINES</span><input id="wofiLines" type="number" min="2" max="12"></label><label class="field"><span>ICON SIZE PX</span><input id="wofiImageSize" type="number" min="12" max="64"></label><label class="field"><span>SHOW ICONS</span><input id="wofiIcons" type="checkbox"></label><label class="field"><span>SEARCH PROMPT</span><input id="wofiPrompt" type="text" maxlength="40"></label><label class="field"><span>SHOW SEARCH</span><input id="wofiSearch" type="checkbox"></label><p class="note">Width, height, columns, location, icons, and search visibility export to Wofi's documented config options.</p></section>
+<section class="panel" data-section="presets" hidden><div class="panelhead"><span class="index">01</span><b>THEMES</b></div><p class="note">Live mini previews. Click any preset to apply its design, then customize it further.</p><div id="presetList"></div></section>
+<section class="panel" data-section="code" hidden><div class="panelhead"><span class="index">01</span><b>OUTPUT TARGET</b></div><div class="choices"><button class="choice active" data-code-target="waybar">WAYBAR</button><button class="choice" data-code-target="wofi">WOFI</button></div><p class="eyebrow">FILES</p><button class="full-btn" data-code-file="config">CONFIG</button><button class="full-btn" data-code-file="style">STYLE.CSS</button><button class="full-btn" id="downloadCodeSidebar">DOWNLOAD SELECTED FILE</button></section>
+</aside>
+<section class="main"><div class="stagehead"><div><span class="index">06</span><span id="stageTitle">LIVE PREVIEW</span></div><div><span id="validStatus">READY</span> <i class="dot"></i></div></div><div class="stage" id="stage"><span class="stage-label" id="stageLabel">WAYBAR / LIVE</span><div class="waybar-shell" id="waybarPreview"><div class="zone left" id="pvLeft"></div><div class="zone mid" id="pvCenter"></div><div class="zone right" id="pvRight"></div></div><iframe id="wofiPreview" class="wofi-frame" title="Isolated Wofi GTK-style simulation" sandbox="" hidden></iframe><div class="editorzones" id="zonesEditor" hidden><div class="zonecolumn"><div class="zoneheading">LEFT</div><div class="dropzone" data-zone="left"></div></div><div class="zonecolumn"><div class="zoneheading">CENTER</div><div class="dropzone" data-zone="center"></div></div><div class="zonecolumn"><div class="zoneheading">RIGHT</div><div class="dropzone" data-zone="right"></div></div></div><div class="presetgrid" id="presetGrid" hidden></div><div class="codewrap" id="codeWrap" hidden><div class="codebar"><div><button id="codeConfigBtn" data-code-file="config" class="active">config.jsonc</button><button data-code-file="style">style.css</button></div><div><button id="copyCode">COPY</button><button id="downloadCode">DOWNLOAD ↗</button></div></div><pre><code id="codeOutput"></code></pre></div><div class="stage-foot" id="engineStatus">ENGINE / RICEFORGE 1.1 · LOCAL ONLY</div></div></section>
+</main>
+<footer class="palette"><div class="palette-title"><span class="index">07</span> PALETTE</div><label class="paletteitem"><input id="backgroundColor" type="color"><div><small>BACKGROUND</small><strong id="backgroundText"></strong></div></label><label class="paletteitem"><input id="surfaceColor" type="color"><div><small>SURFACE</small><strong id="surfaceText"></strong></div></label><label class="paletteitem"><input id="textColor" type="color"><div><small>TEXT</small><strong id="textText"></strong></div></label><label class="paletteitem"><input id="accentColor" type="color"><div><small>ACCENT</small><strong id="accentText"></strong></div></label><button class="random" id="randomBtn">RANDOMIZE ↻</button></footer>
+</div>
+<div class="dialog" id="dialog" hidden><div class="dialogbox"><div class="dialogtop"><h2 id="dialogTitle">EXPORT</h2><button id="closeDialog" aria-label="Close">✕</button></div><div id="dialogBody"></div></div></div><div class="toast" id="toast" role="status" hidden></div><input id="importFile" type="file" accept=".json,application/json" hidden>
+<script>
+'use strict';
+const $ = q => document.querySelector(q);
+const $$ = q => [...document.querySelectorAll(q)];
+const clone = x => JSON.parse(JSON.stringify(x));
+const ZONES=['left','center','right'];
+const modDefs={
+  'hyprland/workspaces':{name:'WORKSPACES',sample:'1  2  3  4'},
+  'hyprland/window':{name:'WINDOW',sample:'Firefox — GitHub'},
+  clock:{name:'CLOCK',sample:'10:24'},network:{name:'NETWORK',sample:'Wi-Fi  84%'},
+  pulseaudio:{name:'AUDIO',sample:'VOL  72%'},battery:{name:'BATTERY',sample:'BAT  83%'},
+  cpu:{name:'CPU',sample:'CPU  12%'},memory:{name:'MEMORY',sample:'RAM  46%'},
+  temperature:{name:'TEMPERATURE',sample:'TEMP  52°'},tray:{name:'TRAY',sample:'●  ●  ●'}
 };
-
-const presets = {
-  brutal: {
-    name: "Neo Brutal",
-    desc: "Hard borders, zero radius, aggressive accent.",
-    background:"#11110f", surface:"#1b1b18", text:"#efeee8", accent:"#ff4b2b",
-    radius:0, gap:8, border:2, opacity:100, shape:"brutal"
-  },
-  void: {
-    name: "Void Purple",
-    desc: "Black, bone white, toxic violet.",
-    background:"#09090b", surface:"#18181b", text:"#f4f4f5", accent:"#c21cd8",
-    radius:2, gap:8, border:2, opacity:96, shape:"sharp"
-  },
-  gruv: {
-    name: "Gruvbox Industrial",
-    desc: "Warm dark surfaces with dirty amber.",
-    background:"#1d2021", surface:"#282828", text:"#ebdbb2", accent:"#d79921",
-    radius:0, gap:6, border:1, opacity:100, shape:"sharp"
-  },
-  tokyo: {
-    name: "Tokyo Float",
-    desc: "Soft neon islands over a deep navy base.",
-    background:"#101014", surface:"#1a1b26", text:"#c0caf5", accent:"#7aa2f7",
-    radius:14, gap:10, border:1, opacity:94, shape:"floating"
-  },
-  mono: {
-    name: "Monochrome",
-    desc: "Nothing but structure.",
-    background:"#101010", surface:"#1d1d1d", text:"#f5f5f5", accent:"#f5f5f5",
-    radius:0, gap:5, border:1, opacity:100, shape:"sharp"
-  },
-  toxic: {
-    name: "Toxic Terminal",
-    desc: "CRT black with acid green indicators.",
-    background:"#050706", surface:"#0c120f", text:"#d8ffe5", accent:"#5cff7a",
-    radius:2, gap:7, border:1, opacity:100, shape:"sharp"
-  },
-  cream: {
-    name: "Cream Brutal",
-    desc: "Light paper, ink black, muted orange.",
-    background:"#efeee8", surface:"#dedbd1", text:"#11110f", accent:"#d8662f",
-    radius:0, gap:9, border:2, opacity:100, shape:"brutal"
-  },
-  glacier: {
-    name: "Glacier Pills",
-    desc: "Cold slate with clean cyan pills.",
-    background:"#0d1418", surface:"#17242b", text:"#e6f7ff", accent:"#67d4ff",
-    radius:30, gap:9, border:1, opacity:96, shape:"pill"
-  },
-  blood: {
-    name: "Bloodline",
-    desc: "Deep charcoal with sharp crimson edges.",
-    background:"#0f0d0d", surface:"#1b1515", text:"#f6eded", accent:"#ff3b3b",
-    radius:0, gap:4, border:3, opacity:100, shape:"sharp"
-  },
-  notched: {
-    name: "Cut Metal",
-    desc: "Chamfered corners with industrial framing.",
-    background:"#0d0f10", surface:"#171a1c", text:"#f2f2ef", accent:"#f0a020",
-    radius:0, gap:8, border:2, opacity:100, shape:"notched"
-  },
-  segmented: {
-    name: "Segment Core",
-    desc: "Divider-driven modules with no soft edges.",
-    background:"#0c1115", surface:"#121a20", text:"#d9edf7", accent:"#52d1dc",
-    radius:0, gap:3, border:1, opacity:100, shape:"segmented"
-  },
-  underline: {
-    name: "Underline",
-    desc: "Almost invisible chrome with accent rails.",
-    background:"#0e0e10", surface:"#151518", text:"#f1f1f1", accent:"#a78bfa",
-    radius:0, gap:12, border:2, opacity:92, shape:"underline"
-  },
-  frame: {
-    name: "Hard Frame",
-    desc: "Wireframe chrome with offset accent shadow.",
-    background:"#f0eee8", surface:"#e2ded3", text:"#11110f", accent:"#11110f",
-    radius:0, gap:8, border:2, opacity:100, shape:"frame"
-  }
+const selectors={
+ 'hyprland/workspaces':'#workspaces','hyprland/window':'#window',clock:'#clock',
+ network:'#network',pulseaudio:'#pulseaudio',battery:'#battery',cpu:'#cpu',
+ memory:'#memory',temperature:'#temperature',tray:'#tray'
 };
-
-const state = {
-  view:"design",
-  target:"waybar",
-  shape:"brutal",
-  position:"top",
-
-  background:"#11110f",
-  surface:"#1b1b18",
-  text:"#efeee8",
-  accent:"#ff4b2b",
-
-  radius:0,
-  gap:8,
-  border:2,
-  opacity:100,
-
-  outerStyle:"solid",
-  moduleShape:"square",
-  workspaceStyle:"fill",
-  clockStyle:"same",
-  shadowStyle:"none",
-  wofiEntryStyle:"solid",
-  wofiSearchStyle:"boxed",
-
-  zones:{
-    left:["hyprland/workspaces","hyprland/window"],
-    center:["clock"],
-    right:["network","pulseaudio","battery"]
-  },
-
-  codeFile:"config",
-  codeTarget:"waybar",
-
-  selectedModule:null,
-  moduleOverrides:{}
+const defaults={
+ target:'waybar',view:'design',codeTarget:'waybar',codeFile:'style',
+ shape:'brutal',background:'#11110f',surface:'#1b1b18',text:'#efeee8',accent:'#ff4b2b',
+ radius:0,gap:8,border:2,opacity:100,font:'monospace',fontSize:12,shadow:'none',
+ outerStyle:'solid',moduleShape:'square',workspaceStyle:'fill',activeRadiusMode:'match',activeRadius:12,
+ clockStyle:'same',barPosition:'top',zones:{left:['hyprland/workspaces','hyprland/window'],center:['clock'],right:['network','pulseaudio','battery']},
+ selectedModule:null,moduleOverrides:{},
+ entryStyle:'solid',searchStyle:'box',wofiItemShape:'square',selectionStyle:'accent',
+ wofiWidth:600,wofiHeight:420,wofiLocation:'center',wofiColumns:1,wofiLines:6,
+ wofiImageSize:28,wofiIcons:true,wofiPrompt:'Search',wofiSearch:true,wofiHeightMode:'pixels',
+ customCSS:{waybar:'',wofi:''}
 };
-
-const $ = (s) => document.querySelector(s);
-const $$ = (s) => [...document.querySelectorAll(s)];
-const root = document.documentElement;
-
-const els = {
-  waybar:$("#waybarPreview"),
-  wofi:$("#wofiPreview"),
-  modulesEditor:$("#modulesEditor"),
-  presetsView:$("#presetsView"),
-  codeView:$("#codeView"),
-  canvasLabel:$("#canvasLabel"),
-  previewTitle:$("#previewTitle"),
-
-  previewLeft:$("#previewLeft"),
-  previewCenter:$("#previewCenter"),
-  previewRight:$("#previewRight"),
-
-  radius:$("#radius"),
-  gap:$("#gap"),
-  border:$("#border"),
-  opacity:$("#opacity"),
-
-  outerStyle:$("#outerStyle"),
-  moduleShape:$("#moduleShape"),
-  workspaceStyle:$("#workspaceStyle"),
-  clockStyle:$("#clockStyle"),
-  shadowStyle:$("#shadowStyle"),
-  wofiEntryStyle:$("#wofiEntryStyle"),
-  wofiSearchStyle:$("#wofiSearchStyle"),
-  wofiComposerExtras:$("#wofiComposerExtras"),
-
-  radiusValue:$("#radiusValue"),
-  gapValue:$("#gapValue"),
-  borderValue:$("#borderValue"),
-  opacityValue:$("#opacityValue"),
-
-  backgroundColor:$("#backgroundColor"),
-  surfaceColor:$("#surfaceColor"),
-  textColor:$("#textColor"),
-  accentColor:$("#accentColor"),
-
-  backgroundText:$("#backgroundText"),
-  surfaceText:$("#surfaceText"),
-  textText:$("#textText"),
-  accentText:$("#accentText"),
-
-  moduleLibrary:$("#moduleLibrary"),
-  presetList:$("#presetList"),
-  randomize:$("#randomizeBtn"),
-  save:$("#saveThemeBtn"),
-  exportBtn:$("#exportBtn"),
-
-  codeOutput:$("#codeOutput"),
-  copyCodeBtn:$("#copyCodeBtn"),
-
-  moduleInspector:$("#moduleInspector"),
-  moduleInspectorEmpty:$("#moduleInspectorEmpty"),
-  inspectorModuleName:$("#inspectorModuleName"),
-  resetModuleBtn:$("#resetModuleBtn"),
-  moduleStyleShape:$("#moduleStyleShape"),
-  moduleBg:$("#moduleBg"),
-  moduleFg:$("#moduleFg"),
-  moduleBorderColor:$("#moduleBorderColor"),
-  moduleBorderWidth:$("#moduleBorderWidth"),
-  moduleRadius:$("#moduleRadius"),
-  modulePaddingX:$("#modulePaddingX"),
-  moduleLabel:$("#moduleLabel")
+const presets={
+ 'Neo Brutal':{background:'#11110f',surface:'#1b1b18',text:'#efeee8',accent:'#ff4b2b',shape:'brutal',radius:0,border:2,gap:8},
+ 'Void Purple':{background:'#09090b',surface:'#18181b',text:'#f4f4f5',accent:'#c21cd8',shape:'pill',radius:20,border:2,gap:9},
+ 'Gruvbox Industrial':{background:'#1d2021',surface:'#282828',text:'#ebdbb2',accent:'#d79921',shape:'sharp',radius:0,border:1,gap:7},
+ 'Tokyo Float':{background:'#101014',surface:'#1a1b26',text:'#c0caf5',accent:'#7aa2f7',shape:'floating',radius:15,border:1,gap:10},
+ 'Glacier':{background:'#0d1418',surface:'#17242b',text:'#e6f7ff',accent:'#67d4ff',shape:'pill',radius:26,border:1,gap:9},
+ 'Terminal':{background:'#050706',surface:'#0c120f',text:'#d8ffe5',accent:'#5cff7a',shape:'underline',radius:0,border:1,gap:5},
+ 'Cream Brutal':{background:'#efeee8',surface:'#dedbd1',text:'#11110f',accent:'#d8662f',shape:'brutal',radius:0,border:2,gap:9},
+ 'Bloodline':{background:'#0f0d0d',surface:'#1b1515',text:'#f6eded',accent:'#ff3b3b',shape:'frame',radius:0,border:3,gap:5},
+ 'Monochrome':{background:'#101010',surface:'#1d1d1d',text:'#f5f5f5',accent:'#f5f5f5',shape:'sharp',radius:0,border:1,gap:5},
+ 'Lavender Paper':{background:'#f0edf6',surface:'#dfd8ed',text:'#211a2b',accent:'#8d5cf5',shape:'pill',radius:18,border:2,gap:11}
 };
-
-function getModuleOverride(key){
-  return state.moduleOverrides[key] || {};
-}
-
-function moduleInlineStyle(key){
-  const o = getModuleOverride(key);
-  const parts = [];
-
-  if(o.background) parts.push(`background:${o.background}`);
-  if(o.text) parts.push(`color:${o.text}`);
-  if(o.borderColor) parts.push(`border-color:${o.borderColor}`);
-  if(Number.isFinite(o.borderWidth)) parts.push(`border-width:${o.borderWidth}px`);
-  if(Number.isFinite(o.radius)) parts.push(`border-radius:${o.radius}px`);
-  if(Number.isFinite(o.paddingX)) parts.push(`padding-left:${o.paddingX}px;padding-right:${o.paddingX}px`);
-
-  if(o.shape === "square") parts.push("border-radius:0");
-  if(o.shape === "pill") parts.push("border-radius:999px");
-  if(o.shape === "underline") parts.push("background:transparent;border-left:0;border-right:0;border-top:0;border-radius:0");
-  if(o.shape === "notched") parts.push("border-radius:0;clip-path:polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,9px 100%,0 calc(100% - 9px))");
-
-  return parts.join(";");
-}
-
-function moduleDisplayText(key){
-  const o = getModuleOverride(key);
-  return o.label || modules[key]?.preview || key;
-}
-
-function modulePreviewHTML(key){
-  const style = moduleInlineStyle(key);
-  if(key === "hyprland/workspaces"){
-    return `<div class="module workspaces" data-preview-module="${key}" style="${style}"><b>1</b><span>2</span><span>3</span><span>4</span></div>`;
+const whitelists={
+ target:['waybar','wofi'],shape:['brutal','floating','pill','sharp','underline','frame'],
+ outerStyle:['solid','floating','frame','underline'],moduleShape:['square','pill','rounded','underline'],
+ workspaceStyle:['fill','pill','outline','underline','dot'],activeRadiusMode:['match','pill','custom'],
+ clockStyle:['same','accent','transparent','pill'],barPosition:['top','bottom'],
+ entryStyle:['solid','outline','underline','ghost'],searchStyle:['box','underline','ghost'],
+ wofiItemShape:['square','pill','rounded'],selectionStyle:['accent','outline','ghost'],
+ wofiLocation:['center','top','bottom','left','right','top_left','top_right','bottom_left','bottom_right'],
+ wofiHeightMode:['pixels','lines'],shadow:['none','hard','accent']
+};
+const numeric={radius:[0,32],gap:[0,24],border:[0,6],opacity:[30,100],fontSize:[9,24],
+ activeRadius:[0,80],wofiWidth:[300,1100],wofiHeight:[200,800],wofiColumns:[1,4],wofiLines:[2,12],wofiImageSize:[12,64]};
+let s=clone(defaults);let toastTimer=null;let selectedInspector=null;let drag=null;
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,Number.isFinite(+v)?+v:a));
+const colorValid=x=>typeof x==='string' && /^#[0-9a-fA-F]{6}$/.test(x);
+const hexAlpha=(hex,a)=>{const c=hex.slice(1);return `rgba(${parseInt(c.slice(0,2),16)}, ${parseInt(c.slice(2,4),16)}, ${parseInt(c.slice(4,6),16)}, ${a})`};
+const safeFont=x=>(String(x||'monospace').replace(/[;{}<>\\"'\n\r]/g,'').trim().slice(0,100)||'monospace');
+const safeString=(x,max=140)=>String(x||'').slice(0,max).replace(/[\r\n]/g,' ');
+function normalize(raw){
+ const v=clone(defaults);if(!raw || typeof raw!=='object')return v;
+ for(const [key,items] of Object.entries(whitelists))if(items.includes(raw[key]))v[key]=raw[key];
+ for(const [key,[a,b]] of Object.entries(numeric))if(raw[key]!==undefined)v[key]=Math.round(clamp(raw[key],a,b));
+ for(const key of ['background','surface','text','accent'])if(colorValid(raw[key]))v[key]=raw[key].toLowerCase();
+ v.font=safeFont(raw.font);v.wofiPrompt=safeString(raw.wofiPrompt,40);
+ for(const key of ['wofiIcons','wofiSearch'])if(typeof raw[key]==='boolean')v[key]=raw[key];
+ if(raw.zones && typeof raw.zones==='object'){
+  const used=new Set();
+  for(const z of ZONES){v.zones[z]=[];for(const key of (Array.isArray(raw.zones[z])?raw.zones[z]:[]))if(modDefs[key]&&!used.has(key)){v.zones[z].push(key);used.add(key)}}
+ }
+ if(raw.moduleOverrides && typeof raw.moduleOverrides==='object'){
+  for(const key of Object.keys(modDefs)){
+   const o=raw.moduleOverrides[key];if(!o||typeof o!=='object')continue;const clean={};
+   if(['inherit','square','rounded','pill','underline'].includes(o.shape))clean.shape=o.shape;
+   for(const p of ['background','text','borderColor'])if(colorValid(o[p]))clean[p]=o[p];
+   for(const [p,range] of Object.entries({borderWidth:[0,8],radius:[0,80],paddingX:[0,30]}))if(o[p]!==undefined)clean[p]=Math.round(clamp(o[p],...range));
+   if(typeof o.format==='string')clean.format=safeString(o.format);
+   if(Object.keys(clean).length)v.moduleOverrides[key]=clean;
   }
-  const extra = key === "clock" ? " clock-module" : "";
-  return `<div class="module${extra}" data-preview-module="${key}" style="${style}">${moduleDisplayText(key)}</div>`;
+ }
+ if(raw.customCSS&&typeof raw.customCSS==='object')for(const target of ['waybar','wofi'])if(typeof raw.customCSS[target]==='string')v.customCSS[target]=raw.customCSS[target].slice(0,12000).replace(/<\/style/gi,'<\\/style');
+ v.selectedModule=modDefs[raw.selectedModule]?raw.selectedModule:null;
+ return v;
 }
-
-function renderWaybarModules(){
-  const map = {
-    left:els.previewLeft,
-    center:els.previewCenter,
-    right:els.previewRight
-  };
-
-  for(const zone of ["left","center","right"]){
-    map[zone].innerHTML = state.zones[zone].map(modulePreviewHTML).join("");
-
-    const drop = $(`.dropzone[data-zone="${zone}"]`);
-    if(drop){
-      drop.innerHTML = state.zones[zone].map((key, index) => `
-        <button
-          class="zone-chip ${state.selectedModule===key ? "selected" : ""}"
-          draggable="true"
-          data-select-module="${key}"
-          data-remove-zone="${zone}"
-          data-remove-index="${index}"
-          data-drag-zone="${zone}"
-          data-drag-index="${index}"
-          data-drag-key="${key}"
-        >
-          ${modules[key]?.label ?? key}
-        </button>
-      `).join("");
-    }
-  }
-
-  $$("[data-select-module]").forEach(btn => {
-    btn.addEventListener("click", (event) => {
-      if(event.shiftKey){
-        const zone = btn.dataset.removeZone;
-        const index = Number(btn.dataset.removeIndex);
-        state.zones[zone].splice(index,1);
-        if(state.selectedModule === btn.dataset.selectModule) state.selectedModule = null;
-      }else{
-        state.selectedModule = btn.dataset.selectModule;
-      }
-      render();
-    });
-  });
-
-  $$("[data-preview-module]").forEach(el => {
-    el.addEventListener("click", () => {
-      state.selectedModule = el.dataset.previewModule;
-      state.view = "modules";
-      $$(".nav-btn").forEach(x => x.classList.toggle("active", x.dataset.view === "modules"));
-      $$(".view-panel").forEach(panel => {
-        panel.classList.toggle("hidden-panel", panel.dataset.panel !== "modules");
-      });
-      render();
-    });
-  });
-
-  let dragPayload = null;
-
-  $$("[data-drag-key]").forEach(chip => {
-    chip.addEventListener("dragstart", event => {
-      dragPayload = {
-        zone: chip.dataset.dragZone,
-        index: Number(chip.dataset.dragIndex),
-        key: chip.dataset.dragKey
-      };
-
-      chip.classList.add("dragging");
-      event.dataTransfer.effectAllowed = "move";
-      event.dataTransfer.setData("text/plain", JSON.stringify(dragPayload));
-    });
-
-    chip.addEventListener("dragend", () => {
-      chip.classList.remove("dragging");
-      $$(".dropzone").forEach(zone => zone.classList.remove("drag-over"));
-    });
-  });
-
-  $$(".dropzone").forEach(zoneEl => {
-    zoneEl.addEventListener("dragover", event => {
-      event.preventDefault();
-      event.dataTransfer.dropEffect = "move";
-      zoneEl.classList.add("drag-over");
-    });
-
-    zoneEl.addEventListener("dragleave", () => {
-      zoneEl.classList.remove("drag-over");
-    });
-
-    zoneEl.addEventListener("drop", event => {
-      event.preventDefault();
-      zoneEl.classList.remove("drag-over");
-
-      let payload = dragPayload;
-      try{
-        const raw = event.dataTransfer.getData("text/plain");
-        if(raw) payload = JSON.parse(raw);
-      }catch{}
-
-      if(!payload) return;
-
-      const targetZone = zoneEl.dataset.zone;
-      const sourceZone = payload.zone;
-      const sourceIndex = payload.index;
-
-      if(!state.zones[sourceZone] || !state.zones[targetZone]) return;
-
-      const [moved] = state.zones[sourceZone].splice(sourceIndex, 1);
-      if(!moved) return;
-
-      const targetChips = [...zoneEl.querySelectorAll("[data-drag-key]:not(.dragging)")];
-      let insertIndex = state.zones[targetZone].length;
-
-      const mouseY = event.clientY;
-      for(let i = 0; i < targetChips.length; i++){
-        const rect = targetChips[i].getBoundingClientRect();
-        if(mouseY < rect.top + rect.height / 2){
-          insertIndex = i;
-          break;
-        }
-      }
-
-      if(sourceZone === targetZone && sourceIndex < insertIndex){
-        insertIndex = Math.max(0, insertIndex);
-      }
-
-      state.zones[targetZone].splice(insertIndex, 0, moved);
-      state.selectedModule = moved;
-      render();
-    });
-  });
+function save(){try{localStorage.setItem('riceforge:stable:v1',JSON.stringify(s));toast('Theme saved locally')}catch(e){toast('Browser prevented local saving')}}
+function notifyState(){try{localStorage.setItem('riceforge:autosave:v1',JSON.stringify(s))}catch{}}
+function toast(message){const t=$('#toast');t.textContent=message;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.hidden=true},2600)}
+function applyShape(shape){s.shape=shape;
+ if(shape==='pill'){Object.assign(s,{radius:24,outerStyle:'solid',moduleShape:'pill',workspaceStyle:'pill',activeRadiusMode:'pill',wofiItemShape:'pill'})}
+ else if(shape==='floating'){Object.assign(s,{radius:14,outerStyle:'floating',moduleShape:'rounded',workspaceStyle:'fill',activeRadiusMode:'match',wofiItemShape:'rounded',shadow:'hard'})}
+ else if(shape==='brutal'){Object.assign(s,{radius:0,outerStyle:'solid',moduleShape:'square',workspaceStyle:'fill',activeRadiusMode:'match',wofiItemShape:'square'})}
+ else if(shape==='sharp'){Object.assign(s,{radius:0,outerStyle:'solid',moduleShape:'square',workspaceStyle:'outline',activeRadiusMode:'match',wofiItemShape:'square'})}
+ else if(shape==='underline'){Object.assign(s,{radius:0,outerStyle:'underline',moduleShape:'underline',workspaceStyle:'underline',activeRadiusMode:'match',wofiItemShape:'square',searchStyle:'underline'})}
+ else if(shape==='frame'){Object.assign(s,{radius:0,outerStyle:'frame',moduleShape:'square',workspaceStyle:'outline',activeRadiusMode:'match',wofiItemShape:'square',shadow:'accent'})}
 }
-
-function renderModuleLibrary(){
-  els.moduleLibrary.innerHTML = Object.entries(modules).map(([key,item]) => `
-    <div class="library-item">
-      <button class="library-btn" data-library="${key}">${item.label}</button>
-      <div class="zone-picker hidden" data-picker="${key}">
-        <button data-add-module="${key}" data-add-zone="left">L</button>
-        <button data-add-module="${key}" data-add-zone="center">C</button>
-        <button data-add-module="${key}" data-add-zone="right">R</button>
-      </div>
-    </div>
-  `).join("");
-
-  $$("[data-library]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const key = btn.dataset.library;
-      const picker = $(`[data-picker="${key}"]`);
-      picker.classList.toggle("hidden");
-    });
-  });
-
-  $$("[data-add-module]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const key = btn.dataset.addModule;
-      const zone = btn.dataset.addZone;
-      state.zones[zone].push(key);
-      render();
-    });
-  });
+function shapeRadius(shape,rounded=s.radius){if(shape==='pill')return 999;if(shape==='rounded')return rounded;return 0}
+function modStyle(key){
+ const o=s.moduleOverrides[key]||{};
+ const shape=o.shape && o.shape!=='inherit'?o.shape:s.moduleShape;
+ const result={shape,bg:o.background||s.surface,fg:o.text||s.text,borderColor:o.borderColor||s.accent,borderWidth:o.borderWidth??s.border,
+ radius:o.radius??shapeRadius(shape),paddingX:o.paddingX??12,format:o.format||''};
+ if(shape==='underline')result.bg='transparent';return result;
 }
-
-function renderPresets(){
-  els.presetList.innerHTML = Object.entries(presets).map(([key,p]) => `
-    <button class="preset-card" data-preset="${key}">
-      <b>${p.name}</b>
-      <span>${p.desc}</span>
-    </button>
-  `).join("");
-
-  const presetGrid = $("#presetGrid");
-  if(presetGrid){
-    presetGrid.innerHTML = Object.entries(presets).map(([key,p]) => {
-      const rr = p.shape === "pill" ? 999 : (["sharp","brutal","notched","segmented","underline","frame"].includes(p.shape) ? 0 : p.radius);
-      const barBg = ["floating","underline","segmented","frame"].includes(p.shape) ? "transparent" : rgbaFromHex(p.background, p.opacity/100);
-      const outerBorder = ["floating","underline","segmented"].includes(p.shape) ? "transparent" : p.accent;
-      const shadow = p.shape === "frame" ? `7px 7px 0 ${p.accent}` : (p.shape === "floating" ? "none" : "7px 7px 0 rgba(17,17,15,.18)");
-
-      return `
-        <article class="preset-live-card" data-preset="${key}">
-          <div class="preset-live-meta">
-            <span>${p.name.toUpperCase()}</span>
-            <span>${p.shape.toUpperCase()}</span>
-          </div>
-
-          <div class="preset-mini-stage" style="background:${p.background};">
-            <div
-              class="preset-mini-bar"
-              style="
-                background:${barBg};
-                color:${p.text};
-                border:${p.border}px solid ${outerBorder};
-                border-radius:${rr}px;
-                box-shadow:${shadow};
-                gap:${p.gap}px;
-              "
-            >
-              <div class="preset-mini-zone">
-                <div class="preset-mini-module"
-                  style="
-                    background:${p.surface};
-                    color:${p.text};
-                    border:${p.border}px solid ${p.accent};
-                    border-radius:${rr}px;
-                  "
-                >1 2 3</div>
-              </div>
-
-              <div class="preset-mini-zone center">
-                <div class="preset-mini-module"
-                  style="
-                    background:${p.surface};
-                    color:${p.text};
-                    border:${p.border}px solid ${p.accent};
-                    border-radius:${rr}px;
-                  "
-                >05:51</div>
-              </div>
-
-              <div class="preset-mini-zone right">
-                <div class="preset-mini-module"
-                  style="
-                    background:${p.surface};
-                    color:${p.text};
-                    border:${p.border}px solid ${p.accent};
-                    border-radius:${rr}px;
-                  "
-                >BAT 83%</div>
-              </div>
-            </div>
-          </div>
-        </article>
-      `;
-    }).join("");
-  }
-
-  $$("[data-preset]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      Object.assign(state, presets[btn.dataset.preset]);
-      syncInputs();
-      render();
-    });
-  });
+function activeRadius(){
+ if(s.activeRadiusMode==='custom')return s.activeRadius;
+ if(s.activeRadiusMode==='pill'||s.workspaceStyle==='pill')return 999;
+ const m=modStyle('hyprland/workspaces');return m.radius;
 }
-
+function selectorRule(sel,decls){return `${sel} {\n${decls.map(x=>'  '+x+';').join('\n')}\n}\n`}
 function generateWaybarConfig(){
-  const j = JSON.stringify;
-  const clockLabel = state.moduleOverrides.clock?.label;
-  const networkLabel = state.moduleOverrides.network?.label;
-  const audioLabel = state.moduleOverrides.pulseaudio?.label;
-  const batteryLabel = state.moduleOverrides.battery?.label;
-  const cpuLabel = state.moduleOverrides.cpu?.label;
-  const memoryLabel = state.moduleOverrides.memory?.label;
-  const tempLabel = state.moduleOverrides.temperature?.label;
-
-  return `{
-  "layer": "top",
-  "position": ${j(state.position)},
-  "height": 38,
-  "spacing": ${state.gap},
-
-  "modules-left": ${JSON.stringify(state.zones.left)},
-  "modules-center": ${JSON.stringify(state.zones.center)},
-  "modules-right": ${JSON.stringify(state.zones.right)},
-
-  "hyprland/workspaces": {
-    "disable-scroll": true,
-    "all-outputs": true
-  },
-
-  "clock": {
-    "format": "${clockLabel || "{:%H:%M}"}",
-    "tooltip-format": "<big>{:%A, %d %B %Y}</big>"
-  },
-
-  "network": {
-    "format-wifi": "${networkLabel || "  {signalStrength}%"}",
-    "format-ethernet": "󰈀",
-    "format-disconnected": "󰖪"
-  },
-
-  "pulseaudio": {
-    "format": "${audioLabel || "  {volume}%"}",
-    "format-muted": "  muted"
-  },
-
-  "battery": {
-    "format": "${batteryLabel || "BAT {capacity}%"}",
-    "format-charging": " {capacity}%"
-  },
-
-  "cpu": {
-    "format": "${cpuLabel || "CPU {usage}%"}"
-  },
-
-  "memory": {
-    "format": "${memoryLabel || "RAM {}%"}"
-  },
-
-  "temperature": {
-    "format": "${tempLabel || " {temperatureC}°"}"
+ const obj={layer:'top',position:s.barPosition,height:Math.max(28,28+s.border*2+6),spacing:s.gap,
+ 'modules-left':[...s.zones.left],'modules-center':[...s.zones.center],'modules-right':[...s.zones.right]};
+ const configMap={
+ 'hyprland/workspaces':{'disable-scroll':true,'all-outputs':true},
+ clock:{format:'{:%H:%M}','tooltip-format':'<big>{:%A, %d %B %Y}</big>'},
+ network:{'format-wifi':'Wi-Fi {signalStrength}%','format-ethernet':'ETH','format-disconnected':'Offline'},
+ pulseaudio:{format:'VOL {volume}%','format-muted':'MUTED'},
+ battery:{format:'BAT {capacity}%','format-charging':'CHG {capacity}%'},cpu:{format:'CPU {usage}%'},
+ memory:{format:'RAM {}%'},temperature:{format:'TEMP {temperatureC}°'}};
+ for(const key of Object.keys(modDefs)){
+  if(!Object.values(s.zones).some(z=>z.includes(key)))continue;
+  if(configMap[key])obj[key]=clone(configMap[key]);
+  const format=s.moduleOverrides[key]?.format;
+  if(format && obj[key]){
+   const field=key==='network'?'format-wifi':'format';if(field in obj[key])obj[key][field]=format;
   }
-}`;
+ }
+ return JSON.stringify(obj,null,2)+'\n';
 }
-
-function rgbaFromHex(hex, alpha){
-  const h = hex.replace("#","");
-  const r = parseInt(h.slice(0,2),16);
-  const g = parseInt(h.slice(2,4),16);
-  const b = parseInt(h.slice(4,6),16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
 function generateWaybarCSS(){
-  const r = state.shape === "pill" ? 999 : (["sharp","brutal","notched","segmented","underline","frame"].includes(state.shape) ? 0 : state.radius);
-  const bg = rgbaFromHex(state.background, state.opacity/100);
-
-  let extras = "";
-  if(state.shape === "floating"){
-    extras += `window#waybar { background: transparent; border-color: transparent; }\n`;
+ const bg=hexAlpha(s.background,s.opacity/100),border=s.border,accent=s.accent;
+ let out=`/* RiceForge — Waybar / GTK3 CSS — v1.1\n   Generated locally. Edit freely. */\n\n`;
+ out+=`* {\n  font-family: "${safeFont(s.font)}";\n  font-size: ${s.fontSize}px;\n  min-height: 0;\n}\n\n`;
+ const outer=s.outerStyle;
+ out+=selectorRule('window#waybar',[
+ `background-color: ${outer==='solid'?bg:'transparent'}`,
+ `color: ${s.text}`,
+ `border: ${outer==='solid'||outer==='frame'?`${border}px solid ${accent}`:outer==='underline'?`0px solid transparent`:'0px solid transparent'}`,
+ ...(outer==='underline'?[`border-bottom: ${border}px solid ${accent}`]:[]),
+ `border-radius: ${outer==='solid'?s.radius:0}px`,
+ ...(outer==='frame'?[`box-shadow: 6px 6px 0 ${accent}`]:[])
+ ]);
+ out+='\n';
+ const all=Object.values(selectors).join(',\n');
+ const radius=shapeRadius(s.moduleShape);
+ out+=selectorRule(all,[
+ `background-color: ${s.moduleShape==='underline'?'transparent':s.surface}`,
+ `color: ${s.text}`,`border: ${s.moduleShape==='underline'?'0px solid transparent':`${border}px solid ${accent}`}`,
+ ...(s.moduleShape==='underline'?[`border-bottom: ${border}px solid ${accent}`]:[]),
+ `border-radius: ${radius}px`,`padding: 0 12px`,`margin: 4px ${Math.floor(s.gap/2)}px`,
+ ...(s.shadow==='hard'?[`box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.35)`]:s.shadow==='accent'?[`box-shadow: 4px 4px 0 ${accent}`]:[])
+ ]);
+ out+='\n';
+ out+=selectorRule('#workspaces',[`padding: 2px 3px`]);
+ const ar=activeRadius();
+ out+=selectorRule('#workspaces button',[
+ 'min-width: 26px','min-height: 26px','padding: 0 7px','margin: 0 2px',
+ 'border: 0px solid transparent',`border-radius: ${ar}px`,
+ 'background-color: transparent',`color: ${s.text}`,
+ 'box-shadow: none','text-shadow: none'
+ ]);
+ const activeBase=[`border-radius: ${ar}px`,'box-shadow: none'];
+ if(s.workspaceStyle==='fill'||s.workspaceStyle==='pill')activeBase.push(`background-color: ${accent}`,`color: ${s.background}`);
+ if(s.workspaceStyle==='outline')activeBase.push('background-color: transparent',`color: ${accent}`,`border: ${Math.max(1,border)}px solid ${accent}`);
+ if(s.workspaceStyle==='underline')activeBase.push('background-color: transparent',`color: ${s.text}`,`border-bottom: ${Math.max(1,border)}px solid ${accent}`);
+ if(s.workspaceStyle==='dot')activeBase.push('background-color: transparent',`color: ${accent}`,`border-bottom: ${Math.max(1,border)}px solid ${accent}`); // GTK-safe dot approximation
+ out+=selectorRule('#workspaces button.active,\n#workspaces button.focused',activeBase);
+ out+=selectorRule('#workspaces button:hover',[`border-radius: ${ar}px`,`background-color: ${accent}`,`color: ${s.background}`]);
+ out+=selectorRule('#workspaces button.urgent',[`color: ${accent}`]);
+ if(s.clockStyle==='accent')out+=selectorRule('#clock',[`background-color: ${accent}`,`color: ${s.background}`]);
+ if(s.clockStyle==='transparent')out+=selectorRule('#clock',['background-color: transparent','border-color: transparent']);
+ if(s.clockStyle==='pill')out+=selectorRule('#clock',['border-radius: 999px']);
+ out+='\n/* Per-module overrides: deliberately last. */\n';
+ for(const [key,m] of Object.entries(s.moduleOverrides)){
+  const sel=selectors[key];if(!sel)continue;
+  const rules=[];
+  if(m.background)rules.push(`background-color: ${m.background}`);
+  if(m.text)rules.push(`color: ${m.text}`);
+  if(m.borderColor)rules.push(`border-color: ${m.borderColor}`);
+  if(m.borderWidth!==undefined)rules.push(`border-width: ${m.borderWidth}px`);
+  if(m.radius!==undefined)rules.push(`border-radius: ${m.radius}px`);
+  if(m.paddingX!==undefined)rules.push(`padding-left: ${m.paddingX}px`,`padding-right: ${m.paddingX}px`);
+  if(m.shape&&m.shape!=='inherit'){
+   if(m.shape==='underline')rules.push('background-color: transparent','border-top-width: 0','border-left-width: 0','border-right-width: 0',`border-bottom: ${m.borderWidth??border}px solid ${m.borderColor||accent}`,'border-radius: 0px');
+   else rules.push(`border-radius: ${m.radius??shapeRadius(m.shape)}px`);
   }
-  if(state.shape === "notched"){
-    extras += `window#waybar, #workspaces, #window, #clock, #network, #pulseaudio, #battery, #cpu, #memory, #temperature, #tray { border-radius: 0; }\n`;
-  }
-  if(state.shape === "segmented"){
-    extras += `#workspaces, #window, #clock, #network, #pulseaudio, #battery, #cpu, #memory, #temperature, #tray { border-left-width: 0; border-right-width: 0; border-radius: 0; }\n`;
-  }
-  if(state.shape === "underline"){
-    extras += `window#waybar { background: transparent; border-color: transparent; }\n#workspaces, #window, #clock, #network, #pulseaudio, #battery, #cpu, #memory, #temperature, #tray { background: transparent; border: none; border-bottom: ${state.border}px solid ${state.accent}; border-radius: 0; }\n`;
-  }
-  if(state.shape === "frame"){
-    extras += `window#waybar { background: transparent; }\n#workspaces, #window, #clock, #network, #pulseaudio, #battery, #cpu, #memory, #temperature, #tray { background: transparent; border-color: transparent; border-bottom: ${state.border}px solid ${state.accent}; border-radius: 0; }\n`;
-  }
-
-  if(state.outerStyle === "floating"){
-    extras += `window#waybar { background: transparent; border-color: transparent; }\n`;
-  } else if(state.outerStyle === "frame"){
-    extras += `window#waybar { background: transparent; border: ${state.border}px solid ${state.accent}; }\n`;
-  } else if(state.outerStyle === "underline"){
-    extras += `window#waybar { background: transparent; border: none; border-bottom: ${state.border}px solid ${state.accent}; }\n`;
-  }
-
-  if(state.moduleShape === "pill"){
-    extras += `#workspaces, #window, #clock, #network, #pulseaudio, #battery, #cpu, #memory, #temperature, #tray { border-radius: 999px; }\n`;
-  } else if(state.moduleShape === "square"){
-    extras += `#workspaces, #window, #clock, #network, #pulseaudio, #battery, #cpu, #memory, #temperature, #tray { border-radius: 0; }\n`;
-  } else if(state.moduleShape === "underline"){
-    extras += `#workspaces, #window, #clock, #network, #pulseaudio, #battery, #cpu, #memory, #temperature, #tray { background: transparent; border: none; border-bottom: ${state.border}px solid ${state.accent}; border-radius: 0; }\n`;
-  }
-
-  if(state.workspaceStyle === "outline"){
-    extras += `#workspaces button.active { background: transparent; color: ${state.accent}; border: ${state.border}px solid ${state.accent}; }\n`;
-  } else if(state.workspaceStyle === "underline"){
-    extras += `#workspaces button.active { background: transparent; color: ${state.text}; border-bottom: 3px solid ${state.accent}; }\n`;
-  } else if(state.workspaceStyle === "dot"){
-    extras += `#workspaces button.active { background: transparent; color: ${state.text}; }\n`;
-  }
-
-  if(state.clockStyle === "accent"){
-    extras += `#clock { background: ${state.accent}; color: ${state.background}; }\n`;
-  } else if(state.clockStyle === "transparent"){
-    extras += `#clock { background: transparent; border-color: transparent; }\n`;
-  } else if(state.clockStyle === "pill"){
-    extras += `#clock { border-radius: 999px; }\n`;
-  }
-
-  if(state.shadowStyle === "hard"){
-    extras += `#workspaces, #window, #clock, #network, #pulseaudio, #battery, #cpu, #memory, #temperature, #tray { box-shadow: 6px 6px 0 rgba(0,0,0,.28); }\n`;
-  } else if(state.shadowStyle === "accent"){
-    extras += `#workspaces, #window, #clock, #network, #pulseaudio, #battery, #cpu, #memory, #temperature, #tray { box-shadow: 6px 6px 0 ${state.accent}; }\n`;
-  }
-
-  const selectorMap = {
-    "hyprland/workspaces":"#workspaces",
-    "hyprland/window":"#window",
-    "clock":"#clock",
-    "network":"#network",
-    "pulseaudio":"#pulseaudio",
-    "battery":"#battery",
-    "cpu":"#cpu",
-    "memory":"#memory",
-    "temperature":"#temperature",
-    "tray":"#tray"
-  };
-
-  for(const [key,o] of Object.entries(state.moduleOverrides)){
-    const sel = selectorMap[key];
-    if(!sel) continue;
-
-    const rules = [];
-    if(o.background) rules.push(`background: ${o.background};`);
-    if(o.text) rules.push(`color: ${o.text};`);
-    if(o.borderColor) rules.push(`border-color: ${o.borderColor};`);
-    if(Number.isFinite(o.borderWidth)) rules.push(`border-width: ${o.borderWidth}px;`);
-    if(Number.isFinite(o.radius)) rules.push(`border-radius: ${o.radius}px;`);
-    if(Number.isFinite(o.paddingX)) rules.push(`padding-left: ${o.paddingX}px; padding-right: ${o.paddingX}px;`);
-
-    if(o.shape === "square") rules.push("border-radius: 0;");
-    if(o.shape === "pill") rules.push("border-radius: 999px;");
-    if(o.shape === "underline") rules.push(`background: transparent; border-left: 0; border-right: 0; border-top: 0; border-bottom: ${state.border}px solid ${o.borderColor || state.accent}; border-radius: 0;`);
-    if(o.shape === "notched") rules.push("border-radius: 0;");
-
-    extras += `\n${sel} {\n  ${rules.join("\\n  ")}\n}\n`;
-  }
-
-
-  return `/* Generated by RiceForge */
-
-* {
-  border: none;
-  border-radius: 0;
-  font-family: "JetBrainsMono Nerd Font", monospace;
-  font-size: 12px;
-  min-height: 0;
+  if(rules.length)out+='\n'+selectorRule(sel,rules);
+ }
+ // Keep active-button radius consistent even if workspace module has custom styling.
+ out+='\n'+selectorRule('#workspaces button.active,\n#workspaces button.focused',[`border-radius: ${ar}px`]);
+ if(s.customCSS.waybar.trim())out+='\n/* Advanced user CSS (not simulated in preview) */\n'+s.customCSS.waybar+'\n';
+ return out;
 }
-
-window#waybar {
-  background: ${state.shape === "floating" ? "transparent" : bg};
-  color: ${state.text};
-${state.shape === "floating" ? "" : `  border: ${state.border}px solid ${state.accent};`}
-}
-
-#workspaces,
-#window,
-#clock,
-#network,
-#pulseaudio,
-#battery,
-#cpu,
-#memory,
-#temperature,
-#tray {
-  background: ${state.surface};
-  color: ${state.text};
-  border: ${state.border}px solid ${state.accent};
-  border-radius: ${r}px;
-  padding: 0 12px;
-  margin: 4px ${Math.max(0, Math.floor(state.gap/2))}px;
-}
-
-#workspaces {
-  padding: 0;
-}
-
-#workspaces button {
-  color: ${state.text};
-  padding: 0 10px;
-  border-radius: ${r}px;
-}
-
-#workspaces button.active {
-  background: ${state.accent};
-  color: ${state.background};
-  border-radius: ${r}px;
-}
-
-#workspaces button:hover {
-  background: ${state.accent};
-  color: ${state.background};
-}
-
-#battery.warning,
-#battery.critical {
-  color: ${state.accent};
-}
-
-${extras}`;
-}
-
 function generateWofiConfig(){
-  return `# Generated by RiceForge
-show=drun
-width=600
-height=420
-location=center
-prompt=Search
-allow_images=true
-image_size=32
-allow_markup=true
-insensitive=true
-term=kitty
-matching=fuzzy
-hide_scroll=true
-dynamic_lines=false
-lines=6
-columns=1
-orientation=vertical
-halign=fill
-content_halign=fill
-use_search_box=true
-
-# Wofi's documented stylesheet option.
-style=~/.config/wofi/style.css`;
+ const obj=[
+ '# RiceForge — Wofi config v1.1',
+ 'show=drun',`width=${s.wofiWidth}`,
+ ...(s.wofiHeightMode==='lines'?[`lines=${s.wofiLines}`]:[`height=${s.wofiHeight}`]),
+ `location=${s.wofiLocation}`,`columns=${s.wofiColumns}`,
+ `allow_images=${s.wofiIcons}`,`image_size=${s.wofiImageSize}`,
+ `hide_search=${!s.wofiSearch}`,`prompt=${s.wofiPrompt.replace(/[\r\n#]/g,'')}`,
+ 'use_search_box=true','matching=fuzzy','insensitive=true','hide_scroll=true','gtk_dark=false',
+ '# stylesheet resolves relative to $XDG_CONFIG_HOME/wofi (place style.css there).',
+ 'stylesheet=style.css'
+ ];return obj.join('\n')+'\n';
 }
 function generateWofiCSS(){
-  const bg = rgbaFromHex(state.background, state.opacity/100);
-
-  const shellRadius =
-    ["sharp","brutal","segmented","underline","frame"].includes(state.shape)
-      ? 0
-      : Math.min(state.radius, 32);
-
-  let itemRadius = state.radius;
-  if(state.moduleShape === "pill") itemRadius = 999;
-  if(["square","notched","underline"].includes(state.moduleShape)) itemRadius = 0;
-
-  const border = Math.max(0, state.border);
-  const gap = Math.max(0, state.gap);
-  const entryMargin = Math.max(0, Math.round(gap / 2));
-
-  let inputCSS = `
-  margin: 8px;
-  padding: 10px 14px;
-  color: ${state.text};
-  background-color: ${state.surface};
-  border: ${border}px solid ${state.accent};
-  border-radius: ${itemRadius}px;
-`;
-
-  if(state.wofiSearchStyle === "underline"){
-    inputCSS = `
-  margin: 8px;
-  padding: 10px 14px;
-  color: ${state.text};
-  background-color: transparent;
-  border: 0;
-  border-bottom: ${border}px solid ${state.accent};
-  border-radius: 0;
-`;
-  }else if(state.wofiSearchStyle === "ghost"){
-    inputCSS = `
-  margin: 8px;
-  padding: 10px 14px;
-  color: ${state.text};
-  background-color: transparent;
-  border: 0;
-  border-radius: 0;
-`;
+ const border=s.border,accent=s.accent,fg=s.text,bg=hexAlpha(s.background,s.opacity/100);
+ const shellRadius=s.shape==='pill'?Math.min(32,s.radius):s.shape==='floating'?s.radius:s.radius;
+ const entryRadius=shapeRadius(s.wofiItemShape);
+ const entryGap=Math.max(0,Math.round(s.gap/2));
+ let out=`/* RiceForge — Wofi / GTK3 CSS — v1.1\n   No browser-only CSS in the exported theme. */\n\n`;
+ out+=selectorRule('*',[`font-family: "${safeFont(s.font)}"`,`font-size: ${s.fontSize}px`]);
+ out+=selectorRule('#window',[
+ `background-color: ${s.shape==='floating'?'transparent':bg}`,`color: ${fg}`,
+ `border: ${s.shape==='floating'?0:border}px solid ${accent}`,
+ `border-radius: ${shellRadius}px`,
+ ...(s.shadow==='accent'?[`box-shadow: 5px 5px 0 ${accent}`]:s.shadow==='hard'?[`box-shadow: 5px 5px 0 rgba(0,0,0,0.38)`]:[])
+ ]);
+ out+=selectorRule('#outer-box',['padding: 8px','background-color: transparent']);
+ const inRules=[`margin: 5px 6px 12px`,`padding: 10px 14px`,`color: ${fg}`];
+ if(s.searchStyle==='box')inRules.push(`background-color: ${s.surface}`,`border: ${border}px solid ${accent}`,`border-radius: ${entryRadius}px`);
+ if(s.searchStyle==='underline')inRules.push('background-color: transparent','border: 0px solid transparent',`border-bottom: ${border}px solid ${accent}`,'border-radius: 0px');
+ if(s.searchStyle==='ghost')inRules.push('background-color: transparent','border: 0px solid transparent','border-radius: 0px');
+ out+='\n'+selectorRule('#input',inRules);
+ out+=selectorRule('#input:focus',['box-shadow: none','outline: none']);
+ out+=selectorRule('#scroll,\n#inner-box',['background-color: transparent','border: 0px solid transparent','padding: 0px','margin: 0px']);
+ let entry=[`margin: ${entryGap}px 6px`,`padding: 8px 12px`,`min-height: 34px`,`color: ${fg}`,`border-radius: ${entryRadius}px`];
+ if(s.entryStyle==='solid'||s.entryStyle==='ghost')entry.push('background-color: transparent','border: 0px solid transparent');
+ if(s.entryStyle==='outline')entry.push('background-color: transparent',`border: ${border}px solid ${accent}`);
+ if(s.entryStyle==='underline')entry.push('background-color: transparent','border: 0px solid transparent',`border-bottom: ${border}px solid ${accent}`,'border-radius: 0px');
+ out+='\n'+selectorRule('#entry',entry);
+ const sel=[`border-radius: ${s.entryStyle==='underline'?0:entryRadius}px`];
+ if(s.selectionStyle==='accent')sel.push(`background-color: ${accent}`,`color: ${s.background}`);
+ if(s.selectionStyle==='outline')sel.push('background-color: transparent',`color: ${accent}`,`border: ${Math.max(border,1)}px solid ${accent}`);
+ if(s.selectionStyle==='ghost')sel.push(`background-color: ${hexAlpha(accent,.2)}`,`color: ${fg}`);
+ out+=selectorRule('#entry:selected',sel);
+ out+=selectorRule('#text',[`color: ${fg}`,'background-color: transparent']);
+ out+=selectorRule('#entry:selected #text',[`color: ${s.selectionStyle==='accent'?s.background:s.selectionStyle==='outline'?accent:fg}`]);
+ out+=selectorRule('#img',[`margin-right: ${Math.round(s.gap+2)}px`,'background-color: transparent']);
+ if(s.customCSS.wofi.trim())out+='\n/* Advanced user CSS */\n'+s.customCSS.wofi+'\n';
+ return out;
+}
+const fileFor=(t,kind)=>kind==='style'?(t==='wofi'?generateWofiCSS():generateWaybarCSS()):(t==='wofi'?generateWofiConfig():generateWaybarConfig());
+function getSample(key){const o=s.moduleOverrides[key]||{};return o.format&&!/[{}]/.test(o.format)?o.format:modDefs[key].sample}
+function previewModule(key){
+ const d=modStyle(key),box=document.createElement('div');box.className='preview-module';box.dataset.previewModule=key;
+ Object.assign(box.style,{
+  backgroundColor:d.bg,color:d.fg,borderColor:d.borderColor,borderWidth:d.shape==='underline'?'0px':d.borderWidth+'px',
+  borderRadius:d.radius+'px',paddingLeft:d.paddingX+'px',paddingRight:d.paddingX+'px',fontFamily:s.font,fontSize:s.fontSize+'px'
+ });
+ if(d.shape==='underline'){box.style.borderBottomWidth=d.borderWidth+'px';box.style.borderBottomColor=d.borderColor}
+ if(key==='hyprland/workspaces'){
+  box.classList.add('preview-workspaces');
+  for(let i=1;i<=4;i++){
+   const b=document.createElement('span');b.className='ws-btn'+(i===1?' active':'');b.textContent=i;
+   b.style.borderRadius=activeRadius()+'px';b.style.color=i===1?(s.workspaceStyle==='fill'||s.workspaceStyle==='pill'?s.background:s.accent):d.fg;
+   if(i===1){
+    if(s.workspaceStyle==='fill'||s.workspaceStyle==='pill')b.style.backgroundColor=s.accent;
+    if(s.workspaceStyle==='outline'){b.style.borderWidth=Math.max(1,s.border)+'px';b.style.borderColor=s.accent}
+    if(s.workspaceStyle==='underline'){b.classList.add('ws-underline');b.style.borderBottomWidth=Math.max(1,s.border)+'px';b.style.borderBottomColor=s.accent}
+    if(s.workspaceStyle==='dot')b.classList.add('ws-dot');
+   }
+   box.appendChild(b);
   }
-
-  let entryCSS = `
-  margin: ${entryMargin}px 8px;
-  padding: 8px 10px;
-  min-height: 36px;
-  color: ${state.text};
-  background-color: transparent;
-  border: 0;
-  border-radius: ${itemRadius}px;
-`;
-
-  if(state.wofiEntryStyle === "outline"){
-    entryCSS = `
-  margin: ${entryMargin}px 8px;
-  padding: 8px 10px;
-  min-height: 36px;
-  color: ${state.text};
-  background-color: transparent;
-  border: ${border}px solid ${state.accent};
-  border-radius: ${itemRadius}px;
-`;
-  }else if(state.wofiEntryStyle === "underline"){
-    entryCSS = `
-  margin: ${entryMargin}px 8px;
-  padding: 8px 10px;
-  min-height: 36px;
-  color: ${state.text};
-  background-color: transparent;
-  border: 0;
-  border-bottom: ${border}px solid ${state.accent};
-  border-radius: 0;
-`;
+ }else{
+  const span=document.createElement('span');span.className='display';span.textContent=getSample(key);box.appendChild(span);
+  if(key==='clock'){
+   if(s.clockStyle==='accent'){box.style.backgroundColor=s.accent;box.style.color=s.background}
+   if(s.clockStyle==='transparent'){box.style.backgroundColor='transparent';box.style.borderColor='transparent'}
+   if(s.clockStyle==='pill')box.style.borderRadius='999px';
   }
-
-  let selectedBG = state.accent;
-  let selectedFG = state.background;
-  if(state.wofiEntryStyle === "ghost"){
-    selectedBG = rgbaFromHex(state.accent, .16);
-    selectedFG = state.text;
+ }
+ box.title='Select '+modDefs[key].name+' to edit';box.style.cursor='pointer';
+ box.addEventListener('click',()=>{s.selectedModule=key;s.view='layout';render()});
+ return box;
+}
+function renderWaybar(){
+ const shell=$('#waybarPreview'),outer=s.outerStyle;
+ const base={backgroundColor:outer==='solid'?hexAlpha(s.background,s.opacity/100):'transparent',color:s.text,
+ borderStyle:'solid',borderColor:outer==='solid'||outer==='frame'?s.accent:'transparent',
+ borderWidth:outer==='solid'||outer==='frame'?s.border+'px':'0px',borderRadius:outer==='solid'?s.radius+'px':'0px',
+ gap:s.gap+'px',fontFamily:s.font,fontSize:s.fontSize+'px',boxShadow:outer==='frame'?`8px 8px 0 ${s.accent}`:'none'};
+ Object.assign(shell.style,base);
+ shell.style.borderBottom=outer==='underline'?`${s.border}px solid ${s.accent}`:'';
+ for(const z of ZONES){const node=$('#pv'+(z==='left'?'Left':z==='center'?'Center':'Right'));node.replaceChildren(...s.zones[z].map(previewModule));node.style.gap=s.gap+'px'}
+}
+function renderWofi(){
+ const iframe=$('#wofiPreview');if(iframe.hidden&&s.view!=='design'&&s.view!=='layout')return;
+ const raw=generateWofiCSS();
+ // GTK state :selected has no equivalent on an HTML div; this is the only selector translation.
+ const theme=raw.replace(/#entry:selected/g,'#entry.selected').replace(/<\/style/gi,'<\\/style');
+ const w=s.wofiWidth,h=s.wofiHeight;
+ const color=s.text;
+ const lineItems=[['Firefox','Browser'],['Kitty','Terminal'],['Dolphin','File Manager'],['Code','Editor'],['Settings','System'],['Files','Utilities'],['Music','Audio'],['Terminal','Console']];
+ const count=Math.max(2,Math.min(8,s.wofiLines));
+ const entries=lineItems.slice(0,count).map(([title,desc],i)=>`<div id="entry" class="${i===0?'selected':''}">${s.wofiIcons?'<span id="img" class="icon">▣</span>':''}<span id="text">${title}</span></div>`).join('');
+ const stageCSS=`
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent}
+body{display:flex;align-items:center;justify-content:center}
+#window{width:${w}px;height:${s.wofiHeightMode==='lines'?Math.min(700,130+s.wofiLines*56):h}px;max-width:95vw;max-height:95vh;box-sizing:border-box;overflow:hidden}
+#outer-box{box-sizing:border-box;height:100%;width:100%;display:flex;flex-direction:column}
+#input{height:49px;display:flex;align-items:center;gap:8px;box-sizing:border-box;flex-shrink:0}
+#input .glass{font-size:17px}#scroll{flex:1;min-height:0;overflow:hidden}#inner-box{display:grid;grid-template-columns:repeat(${s.wofiColumns},minmax(0,1fr));align-content:start;box-sizing:border-box}
+#entry{box-sizing:border-box;min-width:0;display:flex;align-items:center;gap:7px;min-height:50px;overflow:hidden}
+#entry #text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:inherit}
+#img.icon{display:inline-grid;place-items:center;flex-shrink:0;width:${s.wofiImageSize}px;height:${s.wofiImageSize}px;margin-right:0}
+`;
+ iframe.srcdoc=`<!doctype html><html><head><meta charset="utf-8"><style>${stageCSS}\n${theme}</style></head><body><div id="window"><div id="outer-box">${s.wofiSearch?`<div id="input"><span class="glass">⌕</span><span>${s.wofiPrompt.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span></div>`:''}<div id="scroll"><div id="inner-box">${entries}</div></div></div></div></body></html>`;
+}
+function renderModuleLibrary(){
+ const used=new Set(ZONES.flatMap(z=>s.zones[z]));const wrap=$('#moduleLibrary');wrap.replaceChildren();
+ for(const [key,d] of Object.entries(modDefs)){
+  const b=document.createElement('button');b.className='module-add';b.textContent='+ '+d.name;b.dataset.add=key;b.disabled=used.has(key);b.title=used.has(key)?'Already in your bar':'Add to right zone';wrap.appendChild(b)
+ }
+}
+function renderZoneEditor(){
+ for(const z of ZONES){const wrap=$(`.dropzone[data-zone="${z}"]`);wrap.replaceChildren();
+  for(const [index,key] of s.zones[z].entries()){
+   const node=document.createElement('div');node.className='placed'+(s.selectedModule===key?' selected':'');node.draggable=true;node.dataset.key=key;node.dataset.zone=z;node.dataset.index=index;
+   const label=document.createElement('button');label.className='labelbtn';label.textContent=modDefs[key].name;label.title='Inspect module';label.addEventListener('click',()=>{s.selectedModule=key;render()});node.appendChild(label);
+   for(const [action,display] of [['up','↑'],['down','↓'],['remove','×']]){
+    const b=document.createElement('button');b.className='tinybtn';b.dataset.action=action;b.textContent=display;b.title=action+' module';node.appendChild(b)
+   }
+   wrap.appendChild(node);
   }
-
-  return `/* Generated by RiceForge
-   Wofi / GTK CSS
-*/
-
-* {
-  font-family: "JetBrainsMono Nerd Font", monospace;
-  font-size: 14px;
+ }
 }
-
-#window {
-  margin: 0;
-  padding: 0;
-  color: ${state.text};
-  background-color: ${bg};
-  border: ${border}px solid ${state.accent};
-  border-radius: ${shellRadius}px;
+function renderInspector(){
+ const key=s.selectedModule;
+ $('#inspector').hidden=!key;$('#inspectorEmpty').hidden=!!key;
+ if(!key)return;
+ const o=s.moduleOverrides[key]||{};
+ $('#inspectorTitle').textContent=modDefs[key].name;
+ const fields={modShape:o.shape||'inherit',modBg:o.background||s.surface,modFg:o.text||s.text,modBorderColor:o.borderColor||s.accent,
+ modBorder:o.borderWidth??s.border,modRadius:o.radius??shapeRadius(o.shape&&o.shape!=='inherit'?o.shape:s.moduleShape),modPadding:o.paddingX??12,modFormat:o.format||''};
+ for(const [id,value] of Object.entries(fields)){const el=$('#'+id);if(document.activeElement!==el)el.value=value}
 }
-
-#outer-box {
-  margin: 0;
-  padding: 6px;
-  background-color: transparent;
-}
-
-#input {
-${inputCSS}
-}
-
-#input:focus {
-  box-shadow: none;
-  outline: none;
-}
-
-#input image {
-  color: ${state.text};
-}
-
-#scroll {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background-color: transparent;
-}
-
-#inner-box {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background-color: transparent;
-}
-
-#entry {
-${entryCSS}
-}
-
-#entry:selected {
-  background-color: ${selectedBG};
-  color: ${selectedFG};
-  border: 0;
-  outline: none;
-}
-
-#text {
-  margin: 0;
-  padding: 0;
-  color: ${state.text};
-  background-color: transparent;
-}
-
-#entry:selected #text {
-  color: ${selectedFG};
-}
-
-#img {
-  margin-right: 10px;
-  background-color: transparent;
-}`;
-}
-function currentCode(){
-  if(state.codeTarget === "wofi"){
-    return state.codeFile === "style" ? generateWofiCSS() : generateWofiConfig();
+function renderPresets(){
+ const grid=$('#presetGrid'),side=$('#presetList');grid.replaceChildren();side.replaceChildren();
+ for(const [name,p] of Object.entries(presets)){
+  const btn=document.createElement('button');btn.className='presetcard';btn.dataset.preset=name;
+  const head=document.createElement('div');head.className='presettop';head.textContent=name.toUpperCase();btn.appendChild(head);
+  const pane=document.createElement('div');pane.className='presetview';pane.style.background=p.background;
+  const rr=p.shape==='pill'?999:p.shape==='floating'?p.radius:0;
+  for(const label of ['1  2  3','10:24','BAT 83%']){
+   const chip=document.createElement('span');chip.className='presetpiece';chip.textContent=label;
+   Object.assign(chip.style,{background:p.surface,color:p.text,border:`${p.border}px solid ${p.accent}`,borderRadius:rr+'px'});pane.appendChild(chip)
   }
-  return state.codeFile === "style" ? generateWaybarCSS() : generateWaybarConfig();
+  btn.appendChild(pane);grid.appendChild(btn);
+  const sidebtn=document.createElement('button');sidebtn.className='full-btn';sidebtn.dataset.preset=name;sidebtn.textContent=name.toUpperCase();side.appendChild(sidebtn)
+ }
 }
-
 function renderCode(){
-  els.codeOutput.textContent = currentCode();
-
-  const cfgTab = $("#codeConfigTab");
-  if(cfgTab){
-    cfgTab.textContent = state.codeTarget === "wofi" ? "config" : "config.jsonc";
-  }
-
-  $$(".code-tab").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.codeFile === state.codeFile);
-  });
-
-  $$("[data-code-target]").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.codeTarget === state.codeTarget);
-  });
+ $('#codeOutput').textContent=fileFor(s.codeTarget,s.codeFile);
+ $('#codeConfigBtn').textContent=s.codeTarget==='wofi'?'config':'config.jsonc';
+ $$('[data-code-target]').forEach(b=>b.classList.toggle('active',b.dataset.codeTarget===s.codeTarget));
+ $$('[data-code-file]').forEach(b=>b.classList.toggle('active',b.dataset.codeFile===s.codeFile));
 }
-
-function renderModuleInspector(){
-  if(!state.selectedModule){
-    els.moduleInspector.classList.add("hidden");
-    els.moduleInspectorEmpty.classList.remove("hidden");
-    return;
-  }
-
-  els.moduleInspector.classList.remove("hidden");
-  els.moduleInspectorEmpty.classList.add("hidden");
-
-  const key = state.selectedModule;
-  const o = getModuleOverride(key);
-
-  els.inspectorModuleName.textContent = modules[key]?.label || key;
-  els.moduleStyleShape.value = o.shape || "inherit";
-  els.moduleBg.value = o.background || state.surface;
-  els.moduleFg.value = o.text || state.text;
-  els.moduleBorderColor.value = o.borderColor || state.accent;
-  els.moduleBorderWidth.value = Number.isFinite(o.borderWidth) ? o.borderWidth : state.border;
-  els.moduleRadius.value = Number.isFinite(o.radius) ? o.radius : state.radius;
-  els.modulePaddingX.value = Number.isFinite(o.paddingX) ? o.paddingX : 12;
-  els.moduleLabel.value = o.label || "";
+function syncControls(){
+ for(const [id,key] of Object.entries({radius:'radius',gap:'gap',border:'border',opacity:'opacity',font:'font',fontSize:'fontSize',
+  outerStyle:'outerStyle',moduleShape:'moduleShape',workspaceStyle:'workspaceStyle',activeRadiusMode:'activeRadiusMode',activeRadius:'activeRadius',clockStyle:'clockStyle',barPosition:'barPosition',shadow:'shadow',
+  entryStyle:'entryStyle',searchStyle:'searchStyle',wofiItemShape:'wofiItemShape',selectionStyle:'selectionStyle',
+  wofiWidth:'wofiWidth',wofiHeight:'wofiHeight',wofiLocation:'wofiLocation',wofiColumns:'wofiColumns',wofiLines:'wofiLines',wofiImageSize:'wofiImageSize',wofiPrompt:'wofiPrompt'})){
+  const el=$('#'+id);if(el&&document.activeElement!==el)el.value=s[key];
+ }
+ for(const [id,key] of [['wofiIcons','wofiIcons'],['wofiSearch','wofiSearch']])$('#'+id).checked=s[key];
+ for(const key of ['radius','gap','border','opacity'])$('#'+key+'Out').textContent=s[key]+(key==='opacity'?'%':' PX');
+ for(const [id,key] of [['backgroundColor','background'],['surfaceColor','surface'],['textColor','text'],['accentColor','accent']]){
+  $('#'+id).value=s[key];$('#'+id.replace('Color','Text')).textContent=s[key].toUpperCase();
+ }
+ $$('[data-target]').forEach(b=>b.classList.toggle('active',b.dataset.target===s.target));
+ $$('[data-shape]').forEach(b=>b.classList.toggle('active',b.dataset.shape===s.shape));
 }
-
-function renderWofiIsolatedPreview(){
-  const frame = els.wofi;
-  if(!frame) return;
-
-  // Use the exact exported stylesheet. The only browser shim is replacing
-  // GTK's #entry:selected state with a class we can display statically.
-  const gtkCSS = generateWofiCSS();
-  const previewCSS = gtkCSS
-    .replaceAll("#entry:selected #text", "#entry.selected #text")
-    .replaceAll("#entry:selected", "#entry.selected");
-
-  const doc = `<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-html,body{
-  width:100%;
-  height:100%;
-  margin:0;
-  overflow:hidden;
-  background:transparent;
-}
-body{
-  display:grid;
-  place-items:center;
-}
-
-/* Browser layout shim only.
-   Theme rules below are the actual generated Wofi stylesheet. */
-#window{
-  width:600px;
-  height:420px;
-  box-sizing:border-box;
-  overflow:hidden;
-  display:block;
-}
-#outer-box{
-  width:100%;
-  height:100%;
-  box-sizing:border-box;
-}
-#input{
-  box-sizing:border-box;
-  height:54px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-#input .search-icon{
-  width:18px;
-  text-align:center;
-}
-#scroll{
-  box-sizing:border-box;
-}
-#inner-box{
-  box-sizing:border-box;
-}
-#entry{
-  box-sizing:border-box;
-  display:grid;
-  grid-template-columns:40px minmax(0,1fr) auto;
-  align-items:center;
-}
-#img{
-  width:28px;
-  height:28px;
-  margin-right:10px;
-  display:grid;
-  place-items:center;
-  font-size:18px;
-}
-#text{
-  min-width:0;
-}
-.entry-desc{
-  opacity:.62;
-  font-size:11px;
-}
-
-${previewCSS}
-</style>
-</head>
-<body>
-  <div id="window">
-    <div id="outer-box">
-      <div id="input">
-        <span class="search-icon">⌕</span>
-        <span>Search</span>
-      </div>
-
-      <div id="scroll">
-        <div id="inner-box">
-          <div id="entry" class="selected">
-            <div id="img">◈</div>
-            <div id="text">Firefox</div>
-            <div class="entry-desc">Web Browser</div>
-          </div>
-
-          <div id="entry">
-            <div id="img">▣</div>
-            <div id="text">Kitty</div>
-            <div class="entry-desc">Terminal</div>
-          </div>
-
-          <div id="entry">
-            <div id="img">◆</div>
-            <div id="text">Dolphin</div>
-            <div class="entry-desc">File Manager</div>
-          </div>
-
-          <div id="entry">
-            <div id="img">▤</div>
-            <div id="text">Code</div>
-            <div class="entry-desc">Editor</div>
-          </div>
-
-          <div id="entry">
-            <div id="img">◇</div>
-            <div id="text">Settings</div>
-            <div class="entry-desc">System</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</body>
-</html>`;
-
-  frame.srcdoc = doc;
-}
-
 function render(){
-  root.style.setProperty("--theme-bg", state.background);
-  root.style.setProperty("--theme-surface", state.surface);
-  root.style.setProperty("--theme-fg", state.text);
-  root.style.setProperty("--theme-accent", state.accent);
-  root.style.setProperty("--theme-radius", `${state.radius}px`);
-  root.style.setProperty("--theme-gap", `${state.gap}px`);
-  root.style.setProperty("--theme-border", `${state.border}px`);
-  root.style.setProperty("--theme-opacity", state.opacity/100);
-
-  els.radiusValue.textContent = `${state.radius} PX`;
-  els.gapValue.textContent = `${state.gap} PX`;
-  els.borderValue.textContent = `${state.border} PX`;
-  els.opacityValue.textContent = `${state.opacity}%`;
-
-  els.backgroundText.textContent = state.background.toUpperCase();
-  els.surfaceText.textContent = state.surface.toUpperCase();
-  els.textText.textContent = state.text.toUpperCase();
-  els.accentText.textContent = state.accent.toUpperCase();
-
-  els.waybar.className = `waybar-preview ${state.shape} outer-${state.outerStyle} modules-${state.moduleShape} workspace-${state.workspaceStyle} clock-${state.clockStyle} shadow-${state.shadowStyle}`;
-
-  const designingWofi = state.target === "wofi";
-  renderWofiIsolatedPreview();
-  $$(".target-waybar-only").forEach(el => el.classList.toggle("hidden-by-target", designingWofi));
-  $$(".wofi-unsupported").forEach(el => el.classList.toggle("hidden-by-target", designingWofi));
-  els.wofiComposerExtras.classList.toggle("hidden", !designingWofi);
-
-  // If switching to Wofi from a browser-only shape, fall back to a GTK-safe shape.
-  if(designingWofi && state.shape === "notched"){
-    state.shape = "sharp";
-    $$("[data-shape]").forEach(btn => btn.classList.toggle("active", btn.dataset.shape === state.shape));
-  }
-  els.waybar.style.borderWidth = `${state.border}px`;
-
-  renderWaybarModules();
-  renderModuleInspector();
-  renderCode();
-
-  els.waybar.classList.add("hidden");
-  els.wofi.classList.add("hidden");
-  els.modulesEditor.classList.add("hidden");
-  els.presetsView.classList.add("hidden");
-  els.codeView.classList.add("hidden");
-
-  if(state.view === "design"){
-    if(state.target === "waybar") els.waybar.classList.remove("hidden");
-    else els.wofi.classList.remove("hidden");
-    els.previewTitle.textContent = state.target === "wofi" ? "LIVE PREVIEW / GTK SAFE" : "LIVE PREVIEW";
-    els.canvasLabel.textContent = `${state.target.toUpperCase()} / THEME_001`;
-  }else if(state.view === "modules"){
-    els.modulesEditor.classList.remove("hidden");
-    els.previewTitle.textContent = "MODULE LAYOUT";
-    els.canvasLabel.textContent = "WAYBAR / MODULE_EDITOR";
-  }else if(state.view === "presets"){
-    els.presetsView.classList.remove("hidden");
-    els.previewTitle.textContent = "PRESETS";
-    els.canvasLabel.textContent = "RICEFORGE / PRESET_ENGINE";
-  }else{
-    els.codeView.classList.remove("hidden");
-    els.previewTitle.textContent = "GENERATED CODE";
-    els.canvasLabel.textContent = "WAYBAR / OUTPUT";
-  }
+ syncControls();
+ $('#layoutNav').textContent=s.target==='waybar'?'MODULES':'LAYOUT';
+ $$('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===s.view));
+ $$('[data-section]').forEach(el=>{
+  if(el.dataset.section==='target')el.hidden=s.view!=='design';
+  else if(el.dataset.section==='layout')el.hidden=s.view!=='layout';
+  else el.hidden=el.dataset.section!==s.view;
+ });
+ $('#waybarComposer').hidden=s.view!=='design'||s.target!=='waybar';$('#wofiComposer').hidden=s.view!=='design'||s.target!=='wofi';
+ $('#moduleLibraryPanel').hidden=s.view!=='layout'||s.target!=='waybar';
+ $('#moduleInspectorPanel').hidden=s.view!=='layout'||s.target!=='waybar';
+ $('#wofiLayoutPanel').hidden=s.view!=='layout'||s.target!=='wofi';
+ // Target chooser is also available in Code and other modes via DESIGN.
+ const design=s.view==='design',layout=s.view==='layout';
+ const showWaybar=(design||layout)&&s.target==='waybar';
+ const showWofi=(design||layout)&&s.target==='wofi';
+ $('#waybarPreview').hidden=!showWaybar||layout;
+ $('#wofiPreview').hidden=!showWofi;
+ $('#zonesEditor').hidden=!layout||s.target!=='waybar';
+ $('#presetGrid').hidden=s.view!=='presets';$('#codeWrap').hidden=s.view!=='code';
+ $('#stageTitle').textContent=s.view==='code'?'GENERATED FILES':s.view==='presets'?'THEME PRESETS':layout?(s.target==='waybar'?'MODULE LAYOUT':'WOFI LAYOUT'):(s.target==='wofi'?'GTK-STYLE PREVIEW (APPROX.)':'LIVE PREVIEW');
+ $('#stageLabel').textContent=s.view==='code'?s.codeTarget.toUpperCase()+' / OUTPUT':s.target.toUpperCase()+' / '+s.view.toUpperCase();
+ $('#validStatus').textContent=s.view==='code'?'OUTPUT READY':'LOCAL ENGINE';
+ if(showWaybar)renderWaybar();if(showWofi)renderWofi();
+ if(layout&&s.target==='waybar'){renderModuleLibrary();renderZoneEditor();renderInspector()}
+ if(s.view==='code')renderCode();
+ notifyState();
 }
-
-function syncInputs(){
-  els.radius.value = state.radius;
-  els.gap.value = state.gap;
-  els.border.value = state.border;
-  els.opacity.value = state.opacity;
-  els.backgroundColor.value = state.background;
-  els.surfaceColor.value = state.surface;
-  els.textColor.value = state.text;
-  els.accentColor.value = state.accent;
-
-  els.outerStyle.value = state.outerStyle;
-  els.moduleShape.value = state.moduleShape;
-  els.workspaceStyle.value = state.workspaceStyle;
-  els.clockStyle.value = state.clockStyle;
-  els.shadowStyle.value = state.shadowStyle;
-  els.wofiEntryStyle.value = state.wofiEntryStyle;
-  els.wofiSearchStyle.value = state.wofiSearchStyle;
-
-  $$("[data-shape]").forEach(btn =>
-    btn.classList.toggle("active", btn.dataset.shape === state.shape)
-  );
+function change(key,val){
+ if(key in numeric)val=Math.round(clamp(val,...numeric[key]));
+ if(key==='font')val=safeFont(val);if(key==='wofiPrompt')val=safeString(val,40);
+ s[key]=val;render();
 }
-
-$$(".nav-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    state.view = btn.dataset.view;
-    $$(".nav-btn").forEach(x => x.classList.remove("active"));
-    btn.classList.add("active");
-
-    $$(".view-panel").forEach(panel => {
-      panel.classList.toggle("hidden-panel", panel.dataset.panel !== state.view);
-    });
-
-    render();
-  });
+function applyPreset(name){
+ const p=presets[name];if(!p)return;
+ applyShape(p.shape);for(const k of ['background','surface','text','accent','radius','gap','border'])s[k]=p[k];
+ if(s.target==='wofi'){
+  s.wofiItemShape=p.shape==='pill'?'pill':p.shape==='floating'?'rounded':'square';
+  s.entryStyle='solid';s.searchStyle='box';s.selectionStyle='accent';
+ }
+ s.view='design';render();toast(name+' applied');
+}
+function download(name,text,type='text/plain'){
+ const a=document.createElement('a');const url=URL.createObjectURL(new Blob([text],{type}));a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+function downloadCurrent(t=s.codeTarget,k=s.codeFile){download(k==='style'?'style.css':t==='wofi'?'config':'config.jsonc',fileFor(t,k));toast('File exported. Check Downloads.');}
+function downloadTheme(){const v=clone(s);delete v.selectedModule;delete v.view;download('riceforge-theme.json',JSON.stringify({format:'riceforge-1.1',theme:v},null,2)+'\n','application/json');toast('Theme JSON exported')}
+function openDialog(title,content){$('#dialogTitle').textContent=title;$('#dialogBody').replaceChildren();if(typeof content==='string')$('#dialogBody').textContent=content;else $('#dialogBody').append(content);$('#dialog').hidden=false}
+function closeDialog(){$('#dialog').hidden=true}
+function exportDialog(){
+ const box=document.createElement('div');
+ const p=document.createElement('p');p.textContent=`Export ${s.target.toUpperCase()} files individually. This avoids browsers blocking multiple downloads. Nothing is uploaded.`;box.append(p);
+ for(const [label,kind] of [['DOWNLOAD CONFIG','config'],['DOWNLOAD STYLE.CSS','style'],['DOWNLOAD THEME JSON','theme']]){
+  const b=document.createElement('button');b.className='full-btn';b.textContent=label;b.onclick=()=>{if(kind==='theme')downloadTheme();else downloadCurrent(s.target,kind)};box.append(b)
+ }
+ const note=document.createElement('p');note.textContent=s.target==='wofi'?'Save config and style.css into ~/.config/wofi/. GTK rendering may differ slightly from the browser simulation.':'Save config.jsonc and style.css into ~/.config/waybar/. Back up your existing setup first.';box.append(note);openDialog('EXPORT',box)
+}
+function customCssDialog(){
+ const box=document.createElement('div'),desc=document.createElement('p');desc.textContent=`Advanced ${s.target.toUpperCase()} CSS. These rules append to style.css and may override the visual builder. For safety they are NOT simulated in the editor.`;box.append(desc);
+ const area=document.createElement('textarea');area.value=s.customCSS[s.target];area.placeholder='/* Add custom GTK CSS here */';box.append(area);
+ const b=document.createElement('button');b.className='full-btn';b.textContent='SAVE CUSTOM CSS';const t=s.target;
+ b.onclick=()=>{s.customCSS[t]=area.value.slice(0,12000).replace(/<\/style/gi,'<\\/style');closeDialog();render();toast('Custom '+t+' CSS saved')};box.append(b);openDialog('CUSTOM CSS',box)
+}
+function updateSelected(patch){if(!s.selectedModule)return;s.moduleOverrides[s.selectedModule]={...(s.moduleOverrides[s.selectedModule]||{}),...patch};render()}
+function moveModule(key,from,to,beforeKey=null){
+ if(!modDefs[key]||!ZONES.includes(from)||!ZONES.includes(to))return;
+ const i=s.zones[from].indexOf(key);if(i<0)return;
+ s.zones[from].splice(i,1);
+ const j=beforeKey?s.zones[to].indexOf(beforeKey):-1;
+ s.zones[to].splice(j<0?s.zones[to].length:j,0,key);s.selectedModule=key;render()
+}
+// Application event wiring: one state model, no external libraries.
+$$('[data-view]').forEach(btn=>btn.addEventListener('click',()=>{s.view=btn.dataset.view;s.codeTarget=s.target;render()}));
+$$('[data-target]').forEach(btn=>btn.addEventListener('click',()=>{s.target=btn.dataset.target;s.codeTarget=s.target;render()}));
+$$('[data-shape]').forEach(btn=>btn.addEventListener('click',()=>{applyShape(btn.dataset.shape);render()}));
+for(const key of ['radius','gap','border','opacity'])$('#'+key).addEventListener('input',e=>change(key,e.target.value));
+for(const [id,key] of Object.entries({outerStyle:'outerStyle',moduleShape:'moduleShape',workspaceStyle:'workspaceStyle',activeRadiusMode:'activeRadiusMode',
+activeRadius:'activeRadius',clockStyle:'clockStyle',barPosition:'barPosition',shadow:'shadow',font:'font',fontSize:'fontSize',
+entryStyle:'entryStyle',searchStyle:'searchStyle',wofiItemShape:'wofiItemShape',selectionStyle:'selectionStyle',
+wofiWidth:'wofiWidth',wofiHeight:'wofiHeight',wofiLocation:'wofiLocation',wofiColumns:'wofiColumns',wofiLines:'wofiLines',
+wofiImageSize:'wofiImageSize',wofiPrompt:'wofiPrompt',wofiHeightMode:'wofiHeightMode'})){
+ const el=$('#'+id);if(!el)continue;el.addEventListener('change',e=>change(key,e.target.value));
+}
+for(const id of ['wofiIcons','wofiSearch'])$('#'+id).addEventListener('change',e=>change(id,e.target.checked));
+for(const [id,key] of [['backgroundColor','background'],['surfaceColor','surface'],['textColor','text'],['accentColor','accent']]){
+ $('#'+id).addEventListener('input',e=>{if(colorValid(e.target.value))change(key,e.target.value)});
+}
+$$('[data-wofi-preset]').forEach(b=>b.addEventListener('click',()=>{
+ const p=b.dataset.wofiPreset;
+ const variants={classic:{shape:'sharp',wofiItemShape:'square',entryStyle:'solid',searchStyle:'box',selectionStyle:'accent',radius:6,border:1,gap:4},
+ raycast:{shape:'floating',wofiItemShape:'rounded',entryStyle:'ghost',searchStyle:'underline',selectionStyle:'ghost',radius:14,border:1,gap:7,opacity:88},
+ pill:{shape:'pill',wofiItemShape:'pill',entryStyle:'solid',searchStyle:'box',selectionStyle:'accent',radius:24,border:2,gap:8},
+ terminal:{shape:'sharp',wofiItemShape:'square',entryStyle:'underline',searchStyle:'underline',selectionStyle:'outline',radius:0,border:1,gap:2}};
+ Object.assign(s,variants[p]);render();toast('Wofi '+p+' recipe applied');
+}));
+$('#moduleLibrary').addEventListener('click',e=>{
+ const btn=e.target.closest('[data-add]');if(!btn)return;const key=btn.dataset.add;
+ if(ZONES.some(z=>s.zones[z].includes(key)))return;
+ s.zones.right.push(key);s.selectedModule=key;render();
 });
-
-$$("[data-target]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    state.target = btn.dataset.target;
-    state.codeTarget = state.target;
-    $$("[data-target]").forEach(x => x.classList.remove("active"));
-    btn.classList.add("active");
-    render();
-  });
+$('#zonesEditor').addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;
+ const parent=b.closest('[data-key]');if(!parent)return;
+ const {key,zone}=parent.dataset;const idx=s.zones[zone].indexOf(key);if(idx<0)return;
+ if(b.dataset.action==='remove'){s.zones[zone].splice(idx,1);if(s.selectedModule===key)s.selectedModule=null;render();return}
+ if(b.dataset.action==='up'&&idx>0){[s.zones[zone][idx-1],s.zones[zone][idx]]=[s.zones[zone][idx],s.zones[zone][idx-1]];render()}
+ if(b.dataset.action==='down'&&idx<s.zones[zone].length-1){[s.zones[zone][idx+1],s.zones[zone][idx]]=[s.zones[zone][idx],s.zones[zone][idx+1]];render()}
 });
-
-$$("[data-shape]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    state.shape = btn.dataset.shape;
-    $$("[data-shape]").forEach(x => x.classList.remove("active"));
-    btn.classList.add("active");
-
-    if(state.shape === "pill"){ state.radius = 30; els.radius.value = 30; }
-    if(state.shape === "sharp" || state.shape === "brutal"){ state.radius = 0; els.radius.value = 0; }
-
-    render();
-  });
+$('#zonesEditor').addEventListener('dragstart',e=>{
+ const p=e.target.closest('[data-key]');if(!p)return;drag={key:p.dataset.key,zone:p.dataset.zone};p.classList.add('dragging');
+ e.dataTransfer.setData('text/plain',JSON.stringify(drag));e.dataTransfer.effectAllowed='move';
 });
-
-$$("[data-position]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    state.position = btn.dataset.position;
-    $$("[data-position]").forEach(x => x.classList.remove("active"));
-    btn.classList.add("active");
-    render();
-  });
+$('#zonesEditor').addEventListener('dragover',e=>{const el=e.target.closest('.dropzone');if(!el)return;e.preventDefault();el.classList.add('dragover');e.dataTransfer.dropEffect='move'});
+$('#zonesEditor').addEventListener('dragleave',e=>{const el=e.target.closest('.dropzone');if(el&&!el.contains(e.relatedTarget))el.classList.remove('dragover')});
+$('#zonesEditor').addEventListener('dragend',()=>{$$('.dragover,.dragging').forEach(x=>x.classList.remove('dragover','dragging'));drag=null});
+$('#zonesEditor').addEventListener('drop',e=>{
+ const dest=e.target.closest('.dropzone');if(!dest)return;e.preventDefault();$$('.dragover,.dragging').forEach(x=>x.classList.remove('dragover','dragging'));
+ let payload=drag;
+ if(!payload){try{payload=JSON.parse(e.dataTransfer.getData('text/plain'))}catch{}}
+ if(!payload||!modDefs[payload.key]||!ZONES.includes(payload.zone))return;
+ const existing=e.target.closest('.placed');let beforeKey=existing?.dataset.key||null;
+ if(beforeKey===payload.key)beforeKey=null;
+ moveModule(payload.key,payload.zone,dest.dataset.zone,beforeKey);drag=null;
 });
-
-$$("[data-wofi-rice]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const rice = btn.dataset.wofiRice;
-
-    if(rice === "classic"){
-      Object.assign(state,{
-        shape:"sharp",
-        moduleShape:"square",
-        wofiEntryStyle:"solid",
-        wofiSearchStyle:"boxed",
-        radius:8,
-        border:1,
-        gap:4
-      });
+const inspectorBindings={modShape:['shape','change'],modBg:['background','input'],modFg:['text','input'],modBorderColor:['borderColor','input'],
+ modBorder:['borderWidth','change'],modRadius:['radius','change'],modPadding:['paddingX','change'],modFormat:['format','change']};
+for(const [id,[key,evt]] of Object.entries(inspectorBindings)){
+ $('#'+id).addEventListener(evt,e=>{
+  let value=e.target.value;
+  if(key==='borderWidth')value=clamp(value,0,8);
+  if(key==='radius')value=clamp(value,0,80);
+  if(key==='paddingX')value=clamp(value,0,30);
+  if(key==='format')value=safeString(value);
+  updateSelected({[key]:value});
+ });
+}
+$('#resetModule').addEventListener('click',()=>{if(!s.selectedModule)return;delete s.moduleOverrides[s.selectedModule];render();toast('Module reset')});
+$('#removeSelected').addEventListener('click',()=>{if(!s.selectedModule)return;for(const z of ZONES)s.zones[z]=s.zones[z].filter(x=>x!==s.selectedModule);s.selectedModule=null;render()});
+$('#presetGrid').addEventListener('click',e=>{const b=e.target.closest('[data-preset]');if(b)applyPreset(b.dataset.preset)});
+$('#presetList').addEventListener('click',e=>{const b=e.target.closest('[data-preset]');if(b)applyPreset(b.dataset.preset)});
+$$('[data-code-target]').forEach(b=>b.addEventListener('click',()=>{s.codeTarget=b.dataset.codeTarget;s.codeFile='style';render()}));
+$$('[data-code-file]').forEach(b=>b.addEventListener('click',()=>{s.codeFile=b.dataset.codeFile;s.view='code';render()}));
+$('#copyCode').addEventListener('click',async()=>{
+ try{await navigator.clipboard.writeText(fileFor(s.codeTarget,s.codeFile));toast('Copied to clipboard')}
+ catch{toast('Clipboard blocked. Use DOWNLOAD instead.')}
+});
+$('#downloadCode').addEventListener('click',()=>downloadCurrent());
+$('#downloadCodeSidebar').addEventListener('click',()=>downloadCurrent());
+$('#exportBtn').addEventListener('click',exportDialog);
+$('#customCssBtn').addEventListener('click',customCssDialog);
+$('#themeExportBtn').addEventListener('click',downloadTheme);
+$('#saveBtn').addEventListener('click',save);
+$('#importBtn').addEventListener('click',()=>$('#importFile').click());
+$('#importFile').addEventListener('change',async e=>{
+ const file=e.target.files[0];if(!file)return;
+ try{if(file.size>500000)throw new Error('Theme file too large');const raw=JSON.parse(await file.text());s=normalize(raw.theme||raw);s.view='design';s.codeTarget=s.target;render();toast('Theme imported')}
+ catch(err){toast('Could not import: '+err.message)}
+ e.target.value='';
+});
+$('#closeDialog').addEventListener('click',closeDialog);
+$('#dialog').addEventListener('click',e=>{if(e.target===$('#dialog'))closeDialog()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDialog()});
+$('#randomBtn').addEventListener('click',()=>{
+ const names=Object.keys(presets);const p=presets[names[Math.floor(Math.random()*names.length)]];
+ for(const key of ['background','surface','text','accent'])s[key]=p[key];render();toast('New palette applied')
+});
+// Restore only validated settings. No external network calls or scripts.
+try{
+ const current=localStorage.getItem('riceforge:autosave:v1')||localStorage.getItem('riceforge:stable:v1');
+ const legacy=current?null:localStorage.getItem('riceforge-theme-v2');
+ const raw=current||legacy;
+ if(raw){
+  const parsed=JSON.parse(raw);s=normalize(parsed);s.codeTarget=s.target;
+  // Older releases accidentally kept square modules when a Pill preset was chosen.
+  if(legacy&&parsed.shape==='pill'&&parsed.moduleShape==='square'){
+   s.moduleShape='pill';s.workspaceStyle='pill';s.activeRadiusMode='pill';s.wofiItemShape='pill';
+  }
+  if(legacy&&parsed.moduleOverrides){
+   for(const [key,o] of Object.entries(parsed.moduleOverrides))
+    if(modDefs[key]&&o&&typeof o.label==='string'){
+     s.moduleOverrides[key]??={};s.moduleOverrides[key].format=safeString(o.label);
     }
-
-    if(rice === "raycast"){
-      Object.assign(state,{
-        shape:"sharp",
-        moduleShape:"square",
-        wofiEntryStyle:"ghost",
-        wofiSearchStyle:"underline",
-        radius:7,
-        border:1,
-        gap:6,
-        opacity:82
-      });
-    }
-
-    if(rice === "pill"){
-      Object.assign(state,{
-        shape:"pill",
-        moduleShape:"pill",
-        wofiEntryStyle:"solid",
-        wofiSearchStyle:"boxed",
-        radius:26,
-        border:2,
-        gap:8,
-        opacity:100
-      });
-    }
-
-    if(rice === "terminal"){
-      Object.assign(state,{
-        shape:"sharp",
-        moduleShape:"square",
-        wofiEntryStyle:"underline",
-        wofiSearchStyle:"underline",
-        radius:0,
-        border:1,
-        gap:0,
-        opacity:100
-      });
-    }
-
-    syncInputs();
-    render();
-  });
-});
-
-function bindRange(el,key){
-  el.addEventListener("input", () => {
-    state[key] = Number(el.value);
-    render();
-  });
-}
-bindRange(els.radius,"radius");
-bindRange(els.gap,"gap");
-bindRange(els.border,"border");
-bindRange(els.opacity,"opacity");
-
-function bindColor(el,key){
-  el.addEventListener("input", () => {
-    state[key] = el.value;
-    render();
-  });
-}
-bindColor(els.backgroundColor,"background");
-bindColor(els.surfaceColor,"surface");
-bindColor(els.textColor,"text");
-bindColor(els.accentColor,"accent");
-
-function bindSelect(el,key){
-  el.addEventListener("change", () => {
-    state[key] = el.value;
-    render();
-  });
-}
-bindSelect(els.outerStyle,"outerStyle");
-bindSelect(els.moduleShape,"moduleShape");
-bindSelect(els.workspaceStyle,"workspaceStyle");
-bindSelect(els.clockStyle,"clockStyle");
-bindSelect(els.shadowStyle,"shadowStyle");
-bindSelect(els.wofiEntryStyle,"wofiEntryStyle");
-bindSelect(els.wofiSearchStyle,"wofiSearchStyle");
-
-function updateSelectedModule(patch){
-  if(!state.selectedModule) return;
-  const current = state.moduleOverrides[state.selectedModule] || {};
-  state.moduleOverrides[state.selectedModule] = {...current, ...patch};
-  render();
-}
-
-els.moduleStyleShape.addEventListener("change", () => updateSelectedModule({shape:els.moduleStyleShape.value}));
-els.moduleBg.addEventListener("input", () => updateSelectedModule({background:els.moduleBg.value}));
-els.moduleFg.addEventListener("input", () => updateSelectedModule({text:els.moduleFg.value}));
-els.moduleBorderColor.addEventListener("input", () => updateSelectedModule({borderColor:els.moduleBorderColor.value}));
-els.moduleBorderWidth.addEventListener("input", () => updateSelectedModule({borderWidth:Number(els.moduleBorderWidth.value)}));
-els.moduleRadius.addEventListener("input", () => updateSelectedModule({radius:Number(els.moduleRadius.value)}));
-els.modulePaddingX.addEventListener("input", () => updateSelectedModule({paddingX:Number(els.modulePaddingX.value)}));
-els.moduleLabel.addEventListener("input", () => updateSelectedModule({label:els.moduleLabel.value}));
-
-els.resetModuleBtn.addEventListener("click", () => {
-  if(!state.selectedModule) return;
-  delete state.moduleOverrides[state.selectedModule];
-  render();
-});
-
-const palettes = [
-  ["#11110f","#1b1b18","#efeee8","#ff4b2b"],
-  ["#09090b","#18181b","#f4f4f5","#c21cd8"],
-  ["#1d2021","#282828","#ebdbb2","#d79921"],
-  ["#0f111a","#1b1e2b","#f0f0f0","#8fbcbb"],
-  ["#101014","#1a1b26","#c0caf5","#7aa2f7"],
-  ["#18181a","#242428","#f5f5f0","#a6e22e"]
-];
-
-els.randomize.addEventListener("click", () => {
-  const p = palettes[Math.floor(Math.random()*palettes.length)];
-  [state.background,state.surface,state.text,state.accent] = p;
-  syncInputs();
-  render();
-});
-
-els.save.addEventListener("click", () => {
-  localStorage.setItem("riceforge-theme-v2", JSON.stringify(state));
-  els.save.textContent = "SAVED ✓";
-  setTimeout(() => els.save.textContent = "SAVE", 1200);
-});
-
-function downloadFile(name, content, type="text/plain"){
-  const blob = new Blob([content], {type});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-els.exportBtn.addEventListener("click", () => {
-  if(state.target === "wofi"){
-    downloadFile("config", generateWofiConfig(), "text/plain");
-    setTimeout(() => downloadFile("style.css", generateWofiCSS(), "text/css"), 250);
-  }else{
-    downloadFile("config.jsonc", generateWaybarConfig(), "application/json");
-    setTimeout(() => downloadFile("style.css", generateWaybarCSS(), "text/css"), 250);
   }
-});
-
-
-$$("[data-code-target]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    state.codeTarget = btn.dataset.codeTarget;
-    renderCode();
-  });
-});
-
-$$("[data-code-file]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    state.codeFile = btn.dataset.codeFile;
-    state.view = "code";
-
-    $$(".nav-btn").forEach(x => x.classList.toggle("active", x.dataset.view === "code"));
-    $$(".view-panel").forEach(panel => {
-      panel.classList.toggle("hidden-panel", panel.dataset.panel !== "code");
-    });
-
-    render();
-  });
-});
-
-els.copyCodeBtn.addEventListener("click", async () => {
-  try{
-    await navigator.clipboard.writeText(currentCode());
-    els.copyCodeBtn.textContent = "COPIED ✓";
-    setTimeout(() => els.copyCodeBtn.textContent = "COPY", 1100);
-  }catch{
-    els.copyCodeBtn.textContent = "FAILED";
-  }
-});
-
-renderModuleLibrary();
-renderPresets();
-
-const saved = localStorage.getItem("riceforge-theme-v2");
-if(saved){
-  try{
-    const parsed = JSON.parse(saved);
-    Object.assign(state, parsed);
-    syncInputs();
-  }catch{
-    localStorage.removeItem("riceforge-theme-v2");
-  }
-}
-
-render();
-
-
-const bootStatus = document.getElementById("bootStatus");
-if (bootStatus) bootStatus.textContent = "ENGINE READY / V1.0";
+ }
+}catch(e){s=clone(defaults)}
+renderPresets();render();
 </script>
 </body>
 </html>
