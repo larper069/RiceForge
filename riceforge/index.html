@@ -174,7 +174,15 @@ input[type="range"]::-moz-range-thumb{
 .canvas-footer{
   right:36px;bottom:36px;display:flex;gap:22px;color:var(--muted);
 }
-.preview-wrap{width:100%;display:grid;place-items:center;position:relative;z-index:3}
+.preview-wrap{
+  width:100%;
+  height:100%;
+  min-height:0;
+  display:grid;
+  place-items:center;
+  position:relative;
+  z-index:3;
+}
 
 .waybar-preview{
   width:min(900px,82%);
@@ -400,6 +408,10 @@ input[type="range"]::-moz-range-thumb{
   border-bottom:var(--theme-border) solid var(--theme-accent)!important;
 }
 
+.wofi-preview.entry-solid .wofi-entry{
+  background:transparent!important;
+  border:0!important;
+}
 .wofi-preview.entry-outline .wofi-entry{
   background:transparent!important;
   border:var(--theme-border) solid var(--theme-accent)!important;
@@ -454,12 +466,13 @@ input[type="range"]::-moz-range-thumb{
 
 
 .wofi-preview{
-  width:min(560px,65%);padding:14px;
+  width:min(560px,65%);
+  padding:14px;
   background:color-mix(in srgb,var(--theme-bg) calc(var(--theme-opacity)*100%),transparent);
   color:var(--theme-fg);
   border:var(--theme-border) solid var(--theme-accent);
   border-radius:var(--theme-radius);
-  box-shadow:12px 12px 0 rgba(17,17,15,.24);
+  box-shadow:none;
 }
 .wofi-search{
   display:flex;gap:12px;padding:15px;margin-bottom:12px;background:var(--theme-surface);
@@ -467,13 +480,44 @@ input[type="range"]::-moz-range-thumb{
   color:color-mix(in srgb,var(--theme-fg) 65%,transparent);font:700 11px monospace;
 }
 .wofi-entry{
-  min-height:56px;display:grid;grid-template-columns:40px 1fr auto;align-items:center;
-  padding:0 14px;border-bottom:1px solid color-mix(in srgb,var(--theme-fg) 25%,transparent);
+  min-height:56px;
+  display:grid;
+  grid-template-columns:40px 1fr auto;
+  align-items:center;
+  padding:0 14px;
+  margin:calc(var(--theme-gap) / 2) 0;
+  background:transparent;
+  border:0;
+  border-radius:var(--theme-radius);
 }
 .wofi-entry b{font-size:13px}
 .wofi-entry small{color:color-mix(in srgb,var(--theme-fg) 55%,transparent);font:700 9px monospace}
 .wofi-entry.active{background:var(--theme-accent);color:var(--theme-bg)}
 .wofi-entry.active small{color:var(--theme-bg)}
+
+/* WOFI GTK-SAFE PREVIEW
+   Mirrors the exact subset generated for GTK. */
+.wofi-preview{
+  overflow:hidden;
+  box-shadow:none;
+}
+.wofi-preview .wofi-search{
+  box-shadow:none!important;
+}
+.wofi-preview .wofi-entry{
+  box-shadow:none;
+}
+
+
+
+.wofi-preview-frame{
+  width:min(660px,72%);
+  height:470px;
+  border:0;
+  background:transparent;
+  overflow:hidden;
+  display:block;
+}
 
 .modules-editor{
   width:min(1000px,84%);
@@ -624,23 +668,54 @@ input[type="range"]::-moz-range-thumb{
 .full-btn:hover{background:var(--ink);color:var(--paper)}
 
 .code-view{
-  width:min(1000px,86%);height:min(560px,72%);
-  display:grid;grid-template-rows:50px 1fr;
-  border:1px solid var(--ink);background:#11110f;color:#efeee8;
+  width:min(1100px,92%);
+  height:calc(100% - 96px);
+  min-height:300px;
+  max-height:720px;
+  overflow:hidden;
+  display:grid;
+  grid-template-rows:50px minmax(0,1fr);
+  border:1px solid var(--ink);
+  background:#11110f;
+  color:#efeee8;
   box-shadow:14px 14px 0 rgba(17,17,15,.22);
 }
 .code-toolbar{
-  display:flex;justify-content:space-between;border-bottom:1px solid #45433d;
+  position:relative;
+  z-index:2;
+  display:flex;
+  justify-content:space-between;
+  min-height:50px;
+  border-bottom:1px solid #45433d;
+  background:#11110f;
 }
 .code-toolbar>div{display:flex}
 .code-tab,.copy-btn{
-  border:0;border-right:1px solid #45433d;background:transparent;color:#efeee8;
-  padding:0 16px;font:700 10px monospace;cursor:pointer;
+  border:0;
+  border-right:1px solid #45433d;
+  background:transparent;
+  color:#efeee8;
+  padding:0 16px;
+  font:700 10px monospace;
+  cursor:pointer;
 }
 .code-tab.active,.code-tab:hover,.copy-btn:hover{background:#ff4b2b;color:white}
 .copy-btn{border-right:0;border-left:1px solid #45433d}
 .code-view pre{
-  margin:0;padding:20px;overflow:auto;font:12px/1.55 monospace;white-space:pre;
+  min-width:0;
+  min-height:0;
+  height:100%;
+  margin:0;
+  padding:18px 20px 28px;
+  overflow:auto;
+  overscroll-behavior:contain;
+  font:11px/1.5 monospace;
+  white-space:pre;
+  tab-size:2;
+}
+.code-view code{
+  display:block;
+  min-width:max-content;
 }
 
 .palette{
@@ -669,6 +744,7 @@ input[type="range"]::-moz-range-thumb{
 .randomize:hover{background:var(--ink)}
 
 .target-waybar-only.hidden-by-target{display:none!important}
+.wofi-unsupported.hidden-by-target{display:none!important}
 .wofi-composer-extras{margin-top:8px}
 .dropzone.drag-over{
   outline:3px solid var(--accent-ui);
@@ -745,7 +821,7 @@ input[type="range"]::-moz-range-thumb{
             <button class="choice" data-shape="floating">FLOATING</button>
             <button class="choice" data-shape="pill">PILL</button>
             <button class="choice" data-shape="sharp">SHARP</button>
-            <button class="choice" data-shape="notched">NOTCHED</button>
+            <button class="choice wofi-unsupported" data-shape="notched">NOTCHED</button>
             <button class="choice" data-shape="segmented">SEGMENTED</button>
             <button class="choice" data-shape="underline">UNDERLINE</button>
             <button class="choice" data-shape="frame">FRAME</button>
@@ -804,6 +880,13 @@ input[type="range"]::-moz-range-thumb{
             </label>
 
             <div id="wofiComposerExtras" class="wofi-composer-extras hidden">
+              <p class="micro" style="margin-top:12px">WOFI RICE</p>
+              <div class="button-grid two wofi-rice-grid">
+                <button class="choice" data-wofi-rice="classic">CLASSIC</button>
+                <button class="choice" data-wofi-rice="raycast">RAYCAST</button>
+                <button class="choice" data-wofi-rice="pill">PILL</button>
+                <button class="choice" data-wofi-rice="terminal">TERMINAL</button>
+              </div>
               <label class="select-row">
                 <span>ENTRY STYLE</span>
                 <select id="wofiEntryStyle">
@@ -952,13 +1035,12 @@ input[type="range"]::-moz-range-thumb{
               <div class="waybar-zone right" id="previewRight"></div>
             </section>
 
-            <section id="wofiPreview" class="wofi-preview hidden">
-              <div class="wofi-search">⌕ <span>search applications...</span></div>
-              <div class="wofi-entry active"><span></span><b>Firefox</b><small>Web Browser</small></div>
-              <div class="wofi-entry"><span></span><b>Kitty</b><small>Terminal</small></div>
-              <div class="wofi-entry"><span></span><b>Dolphin</b><small>File Manager</small></div>
-              <div class="wofi-entry"><span></span><b>Code</b><small>Editor</small></div>
-            </section>
+            <iframe
+              id="wofiPreview"
+              class="wofi-preview-frame hidden"
+              title="Isolated Wofi preview"
+              sandbox=""
+            ></iframe>
 
             <section id="modulesEditor" class="modules-editor hidden">
               <div class="drag-hint" style="grid-column:1/-1">DRAG MODULES TO REORDER OR MOVE BETWEEN LEFT / CENTER / RIGHT</div>
@@ -1743,121 +1825,194 @@ ${extras}`;
 }
 
 function generateWofiConfig(){
-  return `width=${state.shape === "pill" ? 640 : 600}
+  return `# Generated by RiceForge
+show=drun
+width=600
 height=420
 location=center
-show=drun
 prompt=Search
 allow_images=true
+image_size=32
 allow_markup=true
 insensitive=true
 term=kitty
 matching=fuzzy
-gtk_dark=true`;
-}
+hide_scroll=true
+dynamic_lines=false
+lines=6
+columns=1
+orientation=vertical
+halign=fill
+content_halign=fill
+use_search_box=true
 
+# Wofi's documented stylesheet option.
+style=~/.config/wofi/style.css`;
+}
 function generateWofiCSS(){
-  const r = state.shape === "pill" ? 999 : (["sharp","brutal","notched","segmented","underline","frame"].includes(state.shape) ? 0 : state.radius);
   const bg = rgbaFromHex(state.background, state.opacity/100);
 
-  let special = "";
-  if(state.shape === "floating"){
-    special += `window { background: transparent; border-color: transparent; }\n`;
-  }
-  if(state.shape === "notched"){
-    special += `window { border-radius: 0; }\n#input, #entry { border-radius: 0; }\n`;
-  }
-  if(state.shape === "segmented"){
-    special += `#entry { border-left: ${state.border}px solid ${state.accent}; }\n`;
-  }
-  if(state.shape === "underline"){
-    special += `window { border-color: transparent; }\n#input { border: none; border-bottom: ${state.border}px solid ${state.accent}; }\n#entry { border-bottom: 1px solid ${state.accent}; }\n`;
-  }
-  if(state.shape === "frame"){
-    special += `window { background: transparent; box-shadow: 10px 10px 0 ${state.accent}; }\n`;
-  }
+  const shellRadius =
+    ["sharp","brutal","segmented","underline","frame"].includes(state.shape)
+      ? 0
+      : Math.min(state.radius, 32);
 
-  if(state.moduleShape === "pill"){
-    special += `#input, #entry { border-radius: 999px; }\n`;
-  } else if(state.moduleShape === "square"){
-    special += `#input, #entry { border-radius: 0; }\n`;
-  } else if(state.moduleShape === "underline"){
-    special += `#input, #entry { border-left: 0; border-right: 0; border-top: 0; border-bottom: ${state.border}px solid ${state.accent}; border-radius: 0; }\n`;
-  }
+  let itemRadius = state.radius;
+  if(state.moduleShape === "pill") itemRadius = 999;
+  if(["square","notched","underline"].includes(state.moduleShape)) itemRadius = 0;
 
-  if(state.shadowStyle === "hard"){
-    special += `window { box-shadow: 8px 8px 0 rgba(0,0,0,.28); }\n`;
-  } else if(state.shadowStyle === "accent"){
-    special += `window { box-shadow: 8px 8px 0 ${state.accent}; }\n`;
-  }
+  const border = Math.max(0, state.border);
+  const gap = Math.max(0, state.gap);
+  const entryMargin = Math.max(0, Math.round(gap / 2));
 
-  if(state.wofiEntryStyle === "outline"){
-    special += `#entry { background: transparent; border: ${state.border}px solid ${state.accent}; margin-bottom: 6px; }\n`;
-  } else if(state.wofiEntryStyle === "underline"){
-    special += `#entry { background: transparent; border-left: 0; border-right: 0; border-top: 0; border-bottom: ${state.border}px solid ${state.accent}; border-radius: 0; }\n`;
-  } else if(state.wofiEntryStyle === "ghost"){
-    special += `#entry { background: transparent; border-color: transparent; }\n#entry:selected { background: rgba(255,255,255,.08); }\n`;
-  }
+  let inputCSS = `
+  margin: 8px;
+  padding: 10px 14px;
+  color: ${state.text};
+  background-color: ${state.surface};
+  border: ${border}px solid ${state.accent};
+  border-radius: ${itemRadius}px;
+`;
 
   if(state.wofiSearchStyle === "underline"){
-    special += `#input { background: transparent; border-left: 0; border-right: 0; border-top: 0; border-bottom: ${state.border}px solid ${state.accent}; border-radius: 0; }\n`;
-  } else if(state.wofiSearchStyle === "ghost"){
-    special += `#input { background: transparent; border-color: transparent; }\n`;
+    inputCSS = `
+  margin: 8px;
+  padding: 10px 14px;
+  color: ${state.text};
+  background-color: transparent;
+  border: 0;
+  border-bottom: ${border}px solid ${state.accent};
+  border-radius: 0;
+`;
+  }else if(state.wofiSearchStyle === "ghost"){
+    inputCSS = `
+  margin: 8px;
+  padding: 10px 14px;
+  color: ${state.text};
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
+`;
   }
 
-  return `/* Generated by RiceForge */
-
-window {
-  margin: 0;
-  padding: 14px;
-  background: ${bg};
+  let entryCSS = `
+  margin: ${entryMargin}px 8px;
+  padding: 8px 10px;
+  min-height: 36px;
   color: ${state.text};
-  border: ${state.border}px solid ${state.accent};
-  border-radius: ${r}px;
+  background-color: transparent;
+  border: 0;
+  border-radius: ${itemRadius}px;
+`;
+
+  if(state.wofiEntryStyle === "outline"){
+    entryCSS = `
+  margin: ${entryMargin}px 8px;
+  padding: 8px 10px;
+  min-height: 36px;
+  color: ${state.text};
+  background-color: transparent;
+  border: ${border}px solid ${state.accent};
+  border-radius: ${itemRadius}px;
+`;
+  }else if(state.wofiEntryStyle === "underline"){
+    entryCSS = `
+  margin: ${entryMargin}px 8px;
+  padding: 8px 10px;
+  min-height: 36px;
+  color: ${state.text};
+  background-color: transparent;
+  border: 0;
+  border-bottom: ${border}px solid ${state.accent};
+  border-radius: 0;
+`;
+  }
+
+  let selectedBG = state.accent;
+  let selectedFG = state.background;
+  if(state.wofiEntryStyle === "ghost"){
+    selectedBG = rgbaFromHex(state.accent, .16);
+    selectedFG = state.text;
+  }
+
+  return `/* Generated by RiceForge
+   Wofi / GTK CSS
+*/
+
+* {
   font-family: "JetBrainsMono Nerd Font", monospace;
+  font-size: 14px;
+}
+
+#window {
+  margin: 0;
+  padding: 0;
+  color: ${state.text};
+  background-color: ${bg};
+  border: ${border}px solid ${state.accent};
+  border-radius: ${shellRadius}px;
+}
+
+#outer-box {
+  margin: 0;
+  padding: 6px;
+  background-color: transparent;
 }
 
 #input {
-  margin: 0 0 12px 0;
-  padding: 12px 14px;
-  background: ${state.surface};
+${inputCSS}
+}
+
+#input:focus {
+  box-shadow: none;
+  outline: none;
+}
+
+#input image {
   color: ${state.text};
-  border: ${state.border}px solid ${state.accent};
-  border-radius: ${r}px;
+}
+
+#scroll {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
 }
 
 #inner-box {
   margin: 0;
   padding: 0;
-}
-
-#scroll {
-  margin: 0;
+  border: 0;
+  background-color: transparent;
 }
 
 #entry {
-  padding: 10px 14px;
-  color: ${state.text};
-  background: transparent;
-  border-radius: ${r}px;
+${entryCSS}
 }
 
 #entry:selected {
-  background: ${state.accent};
-  color: ${state.background};
+  background-color: ${selectedBG};
+  color: ${selectedFG};
+  border: 0;
+  outline: none;
 }
 
-#text:selected {
-  color: ${state.background};
+#text {
+  margin: 0;
+  padding: 0;
+  color: ${state.text};
+  background-color: transparent;
+}
+
+#entry:selected #text {
+  color: ${selectedFG};
 }
 
 #img {
   margin-right: 10px;
+  background-color: transparent;
+}`;
 }
-
-${special}`;
-}
-
 function currentCode(){
   if(state.codeTarget === "wofi"){
     return state.codeFile === "style" ? generateWofiCSS() : generateWofiConfig();
@@ -1906,6 +2061,139 @@ function renderModuleInspector(){
   els.moduleLabel.value = o.label || "";
 }
 
+function renderWofiIsolatedPreview(){
+  const frame = els.wofi;
+  if(!frame) return;
+
+  // Use the exact exported stylesheet. The only browser shim is replacing
+  // GTK's #entry:selected state with a class we can display statically.
+  const gtkCSS = generateWofiCSS();
+  const previewCSS = gtkCSS
+    .replaceAll("#entry:selected #text", "#entry.selected #text")
+    .replaceAll("#entry:selected", "#entry.selected");
+
+  const doc = `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+html,body{
+  width:100%;
+  height:100%;
+  margin:0;
+  overflow:hidden;
+  background:transparent;
+}
+body{
+  display:grid;
+  place-items:center;
+}
+
+/* Browser layout shim only.
+   Theme rules below are the actual generated Wofi stylesheet. */
+#window{
+  width:600px;
+  height:420px;
+  box-sizing:border-box;
+  overflow:hidden;
+  display:block;
+}
+#outer-box{
+  width:100%;
+  height:100%;
+  box-sizing:border-box;
+}
+#input{
+  box-sizing:border-box;
+  height:54px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+#input .search-icon{
+  width:18px;
+  text-align:center;
+}
+#scroll{
+  box-sizing:border-box;
+}
+#inner-box{
+  box-sizing:border-box;
+}
+#entry{
+  box-sizing:border-box;
+  display:grid;
+  grid-template-columns:40px minmax(0,1fr) auto;
+  align-items:center;
+}
+#img{
+  width:28px;
+  height:28px;
+  margin-right:10px;
+  display:grid;
+  place-items:center;
+  font-size:18px;
+}
+#text{
+  min-width:0;
+}
+.entry-desc{
+  opacity:.62;
+  font-size:11px;
+}
+
+${previewCSS}
+</style>
+</head>
+<body>
+  <div id="window">
+    <div id="outer-box">
+      <div id="input">
+        <span class="search-icon">⌕</span>
+        <span>Search</span>
+      </div>
+
+      <div id="scroll">
+        <div id="inner-box">
+          <div id="entry" class="selected">
+            <div id="img">◈</div>
+            <div id="text">Firefox</div>
+            <div class="entry-desc">Web Browser</div>
+          </div>
+
+          <div id="entry">
+            <div id="img">▣</div>
+            <div id="text">Kitty</div>
+            <div class="entry-desc">Terminal</div>
+          </div>
+
+          <div id="entry">
+            <div id="img">◆</div>
+            <div id="text">Dolphin</div>
+            <div class="entry-desc">File Manager</div>
+          </div>
+
+          <div id="entry">
+            <div id="img">▤</div>
+            <div id="text">Code</div>
+            <div class="entry-desc">Editor</div>
+          </div>
+
+          <div id="entry">
+            <div id="img">◇</div>
+            <div id="text">Settings</div>
+            <div class="entry-desc">System</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  frame.srcdoc = doc;
+}
+
 function render(){
   root.style.setProperty("--theme-bg", state.background);
   root.style.setProperty("--theme-surface", state.surface);
@@ -1927,13 +2215,19 @@ function render(){
   els.accentText.textContent = state.accent.toUpperCase();
 
   els.waybar.className = `waybar-preview ${state.shape} outer-${state.outerStyle} modules-${state.moduleShape} workspace-${state.workspaceStyle} clock-${state.clockStyle} shadow-${state.shadowStyle}`;
-  els.wofi.className = `wofi-preview ${state.shape} modules-${state.moduleShape} shadow-${state.shadowStyle} entry-${state.wofiEntryStyle} search-${state.wofiSearchStyle}`;
 
   const designingWofi = state.target === "wofi";
+  renderWofiIsolatedPreview();
   $$(".target-waybar-only").forEach(el => el.classList.toggle("hidden-by-target", designingWofi));
+  $$(".wofi-unsupported").forEach(el => el.classList.toggle("hidden-by-target", designingWofi));
   els.wofiComposerExtras.classList.toggle("hidden", !designingWofi);
+
+  // If switching to Wofi from a browser-only shape, fall back to a GTK-safe shape.
+  if(designingWofi && state.shape === "notched"){
+    state.shape = "sharp";
+    $$("[data-shape]").forEach(btn => btn.classList.toggle("active", btn.dataset.shape === state.shape));
+  }
   els.waybar.style.borderWidth = `${state.border}px`;
-  els.wofi.style.borderWidth = `${state.border}px`;
 
   renderWaybarModules();
   renderModuleInspector();
@@ -1948,7 +2242,7 @@ function render(){
   if(state.view === "design"){
     if(state.target === "waybar") els.waybar.classList.remove("hidden");
     else els.wofi.classList.remove("hidden");
-    els.previewTitle.textContent = "LIVE PREVIEW";
+    els.previewTitle.textContent = state.target === "wofi" ? "LIVE PREVIEW / GTK SAFE" : "LIVE PREVIEW";
     els.canvasLabel.textContent = `${state.target.toUpperCase()} / THEME_001`;
   }else if(state.view === "modules"){
     els.modulesEditor.classList.remove("hidden");
@@ -2030,6 +2324,66 @@ $$("[data-position]").forEach(btn => {
     state.position = btn.dataset.position;
     $$("[data-position]").forEach(x => x.classList.remove("active"));
     btn.classList.add("active");
+    render();
+  });
+});
+
+$$("[data-wofi-rice]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const rice = btn.dataset.wofiRice;
+
+    if(rice === "classic"){
+      Object.assign(state,{
+        shape:"sharp",
+        moduleShape:"square",
+        wofiEntryStyle:"solid",
+        wofiSearchStyle:"boxed",
+        radius:8,
+        border:1,
+        gap:4
+      });
+    }
+
+    if(rice === "raycast"){
+      Object.assign(state,{
+        shape:"sharp",
+        moduleShape:"square",
+        wofiEntryStyle:"ghost",
+        wofiSearchStyle:"underline",
+        radius:7,
+        border:1,
+        gap:6,
+        opacity:82
+      });
+    }
+
+    if(rice === "pill"){
+      Object.assign(state,{
+        shape:"pill",
+        moduleShape:"pill",
+        wofiEntryStyle:"solid",
+        wofiSearchStyle:"boxed",
+        radius:26,
+        border:2,
+        gap:8,
+        opacity:100
+      });
+    }
+
+    if(rice === "terminal"){
+      Object.assign(state,{
+        shape:"sharp",
+        moduleShape:"square",
+        wofiEntryStyle:"underline",
+        wofiSearchStyle:"underline",
+        radius:0,
+        border:1,
+        gap:0,
+        opacity:100
+      });
+    }
+
+    syncInputs();
     render();
   });
 });
@@ -2184,7 +2538,7 @@ render();
 
 
 const bootStatus = document.getElementById("bootStatus");
-if (bootStatus) bootStatus.textContent = "ENGINE READY / V0.7";
+if (bootStatus) bootStatus.textContent = "ENGINE READY / V1.0";
 </script>
 </body>
 </html>
